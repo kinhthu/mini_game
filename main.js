@@ -242,3 +242,90 @@ nextLevelBtn.addEventListener('click', () => {
 // Initialize game
 createBoard();
 updateHighScoreDisplay();
+
+// ==========================================
+// CUTE MASCOT INTERACTIVE LOGIC
+// ==========================================
+const mascot = document.getElementById('cute-mascot');
+const speechBubble = document.getElementById('mascot-speech');
+
+// Danh sách những câu nói dễ thương
+const mascotQuotes = [
+    "Cố lên bạn ơi! 🌸",
+    "Tìm cặp trùng đi nào! ⭐",
+    "Kẹo Konpeito ngon quá! ✨",
+    "Tớ là Soot Sprite nè! 🐾",
+    "Totoro đang cổ vũ bạn đó! 🌳",
+    "Chơi thật vui vẻ nhé! 🍀",
+    "Bạn chơi đỉnh quá đi! 🎉",
+    "Hãy tập trung nào! 🕯️",
+    "Có đói bụng không? 🍵",
+    "Tuyệt vời ông mặt trời! ☀️"
+];
+
+// Hàm chọn câu thoại ngẫu nhiên
+function showRandomQuote() {
+    const randomIndex = Math.floor(Math.random() * mascotQuotes.length);
+    speechBubble.textContent = mascotQuotes[randomIndex];
+}
+
+// Hàm tạo hiệu ứng hạt kẹo bay tung toé
+function createKonpeitoParticles() {
+    const rect = mascot.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    
+    // Bảng màu pastel kẹo Konpeito dễ thương
+    const colors = ['#fde047', '#f472b6', '#60a5fa', '#34d399', '#a78bfa', '#fb923c'];
+    
+    for (let i = 0; i < 8; i++) {
+        const particle = document.createElement('div');
+        particle.classList.add('konpeito-particle');
+        
+        // Tính hướng bay ngẫu nhiên vòng tròn
+        const angle = Math.random() * Math.PI * 2;
+        const distance = 40 + Math.random() * 60;
+        const tx = Math.cos(angle) * distance;
+        const ty = Math.sin(angle) * distance;
+        const rot = 180 + Math.random() * 360;
+        const color = colors[Math.floor(Math.random() * colors.length)];
+        
+        particle.style.setProperty('--tx', `${tx}px`);
+        particle.style.setProperty('--ty', `${ty}px`);
+        particle.style.setProperty('--rot', `${rot}deg`);
+        particle.style.setProperty('--particle-color', color);
+        
+        // Đặt toạ độ xuất phát từ tâm Mascot
+        particle.style.left = `${centerX - 7}px`;
+        particle.style.top = `${centerY - 7}px`;
+        
+        document.body.appendChild(particle);
+        
+        // Tự động xoá hạt sau khi hiệu ứng kết thúc
+        setTimeout(() => {
+            particle.remove();
+        }, 700);
+    }
+}
+
+// Lắng nghe sự kiện click mascot
+if (mascot) {
+    mascot.addEventListener('click', () => {
+        // Hiệu ứng nhảy
+        mascot.classList.remove('pop-active');
+        void mascot.offsetWidth; // Trigger reflow để restart animation
+        mascot.classList.add('pop-active');
+        
+        // Thay đổi câu thoại
+        showRandomQuote();
+        
+        // Bắn kẹo sao
+        createKonpeitoParticles();
+    });
+    
+    // Đổi câu thoại mỗi khi hover chuột qua
+    mascot.addEventListener('mouseenter', () => {
+        showRandomQuote();
+    });
+}
+

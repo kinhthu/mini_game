@@ -297,3 +297,155 @@ h1 {
     }
     h1 { font-size: 2.5rem; }
 }
+
+/* ==========================================
+   CUTE MASCOT & INTERACTIONS (GHIBLI STYLE)
+   ========================================== */
+.soot-sprite-container {
+    position: fixed;
+    top: 1.5rem;
+    left: 1.5rem;
+    z-index: 90;
+    width: 65px;
+    height: 65px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    user-select: none;
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.soot-sprite-container:hover {
+    transform: scale(1.1);
+}
+
+.soot-sprite {
+    width: 100%;
+    height: 100%;
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4));
+    animation: float-and-wiggle 4s infinite ease-in-out;
+}
+
+/* Con ngươi mắt tự động đảo quanh */
+.pupil-left, .pupil-right {
+    transform-origin: center;
+    animation: look-around 8s infinite ease-in-out;
+}
+
+/* Bong bóng hội thoại nhỏ xinh */
+.speech-bubble {
+    position: absolute;
+    bottom: -45px;
+    background: rgba(15, 23, 42, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: var(--text-main);
+    padding: 0.4rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    backdrop-filter: blur(8px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-8px) scale(0.9);
+    transition: opacity 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
+                transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    font-family: system-ui, -apple-system, sans-serif;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.speech-bubble::before {
+    content: '';
+    position: absolute;
+    top: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 0 6px 6px 6px;
+    border-style: solid;
+    border-color: transparent transparent rgba(15, 23, 42, 0.85) transparent;
+}
+
+/* Kích hoạt bong bóng thoại khi Hover hoặc Active */
+.soot-sprite-container:hover .speech-bubble,
+.soot-sprite-container.active .speech-bubble {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+
+/* Hiệu ứng nảy mạnh khi click */
+.soot-sprite-container.pop-active {
+    animation: pop-bounce 0.4s ease-out;
+}
+
+/* Hạt kẹo sao Konpeito pháo hoa */
+.konpeito-particle {
+    position: fixed;
+    pointer-events: none;
+    z-index: 100;
+    width: 14px;
+    height: 14px;
+    background-color: var(--particle-color);
+    clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+    animation: particle-burst 0.7s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+/* KEYFRAMES ANIMATIONS */
+@keyframes float-and-wiggle {
+    0%, 100% {
+        transform: translateY(0) rotate(-2deg);
+    }
+    50% {
+        transform: translateY(-6px) rotate(3deg);
+    }
+}
+
+@keyframes look-around {
+    0%, 12%, 88%, 100% {
+        transform: translate(0, 0);
+    }
+    15%, 35% {
+        transform: translate(-1.5px, 0.5px);
+    }
+    40%, 60% {
+        transform: translate(1.5px, -0.5px);
+    }
+    65%, 85% {
+        transform: translate(0, -1px);
+    }
+}
+
+@keyframes pop-bounce {
+    0% { transform: scale(1); }
+    30% { transform: scale(0.85) translateY(4px); }
+    60% { transform: scale(1.2) translateY(-8px) rotate(8deg); }
+    100% { transform: scale(1); }
+}
+
+@keyframes particle-burst {
+    0% {
+        transform: translate(0, 0) scale(1) rotate(0deg);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(var(--tx), var(--ty)) scale(0) rotate(var(--rot));
+        opacity: 0;
+    }
+}
+
+/* Tự động thu gọn trên Mobile */
+@media (max-width: 600px) {
+    .soot-sprite-container {
+        top: 0.75rem;
+        left: 0.75rem;
+        width: 45px;
+        height: 45px;
+    }
+    .speech-bubble {
+        font-size: 0.65rem;
+        bottom: -38px;
+        padding: 0.3rem 0.6rem;
+    }
+}
+
