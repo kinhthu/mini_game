@@ -10,6 +10,25 @@ let seconds = 0;
 let gameStarted = false;
 let isLocked = false;
 
+const HIGH_SCORE_KEY = 'memoryMatchHighScores';
+
+function loadHighScores() {
+    try {
+        return JSON.parse(localStorage.getItem(HIGH_SCORE_KEY)) || {};
+    } catch (e) {
+        return {};
+    }
+}
+
+function saveHighScores(scores) {
+    localStorage.setItem(HIGH_SCORE_KEY, JSON.stringify(scores));
+}
+
+function getHighScoreForLevel(level) {
+    const scores = loadHighScores();
+    return scores[level] || null;
+}
+
 const grid = document.getElementById('grid');
 const movesDisplay = document.getElementById('moves');
 const timeDisplay = document.getElementById('time');
@@ -20,6 +39,31 @@ const nextLevelBtn = document.getElementById('next-level-btn');
 const finalMoves = document.getElementById('final-moves');
 const finalTime = document.getElementById('final-time');
 const currentLevelDisplay = document.getElementById('current-level');
+const highScoreDisplay = document.getElementById('high-score');
+const newRecordMsg = document.getElementById('new-record-msg');
+
+function updateHighScoreDisplay() {
+    const record = getHighScoreForLevel(currentLevel);
+    if (record) {
+        highScoreDisplay.textContent = `${record.moves} / ${formatTime(record.seconds)}`;
+    } else {
+        highScoreDisplay.textContent = '--';
+    }
+}
+
+function checkAndSaveHighScore() {
+    const scores = loadHighScores();
+    const current = scores[currentLevel];
+    const isNew = !current
+        || moves < current.moves
+        || (moves === current.moves && seconds < current.seconds);
+
+    if (isNew) {
+        scores[currentLevel] = { moves, seconds };
+        saveHighScores(scores);
+    }
+    return isNew;
+}
 
 function shuffle(array) {
     for (let i = array.length - 1; i > 0; i--) {
@@ -152,9 +196,12 @@ function unflipCards() {
 
 function gameOver() {
     stopTimer();
+    const isNewRecord = checkAndSaveHighScore();
     setTimeout(() => {
         finalMoves.textContent = moves;
         finalTime.textContent = formatTime(seconds);
+        newRecordMsg.style.display = isNewRecord ? 'block' : 'none';
+        updateHighScoreDisplay();
         modalOverlay.classList.add('active');
     }, 500);
 }
@@ -173,6 +220,7 @@ function resetGame() {
     modalOverlay.classList.remove('active');
     
     createBoard();
+    updateHighScoreDisplay();
 }
 
 restartBtn.addEventListener('click', () => {
@@ -193,3 +241,4 @@ nextLevelBtn.addEventListener('click', () => {
 
 // Initialize game
 createBoard();
+updateHighScoreDisplay();

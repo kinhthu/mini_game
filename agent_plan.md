@@ -1,126 +1,175 @@
-# Kế hoạch chi tiết: Đổi màu chữ (Giao lại lần 5)
+# Kế hoạch triển khai: Thêm tính năng High Score
 
-## 1. Bối cảnh & Phân tích hiện trạng
+## 1. Phân tích hiện trạng
 
-**Dự án:** Memory Match Game (HTML/CSS/JS thuần)
-**File liên quan:** `style.css` (file duy nhất chứa định nghĩa màu chữ)
+**Dự án:** Memory Match Game (lật bài tìm cặp emoji)
 
-### Hiện trạng `style.css`:
-- Khối `:root` (dòng 1-12) hiện chỉ có biến `--text-color: #ffffff` (KHÔNG có `--text-main` hay `--text-muted` như mô tả task).
-- Background body là ảnh `background.png` (dòng 22) → nền không cố định, có nhiều vùng sáng-tối khác nhau.
-- Hầu hết text đang dùng `#ffffff` + `-webkit-text-stroke` đen 1-2px + `text-shadow` đen lệch → kiểu chữ kiểu "cartoon outline".
-- Có một số chỗ hardcode màu `#0f172a` (modal text) và `#000000` (stroke/shadow) không qua biến CSS.
-- Đây là lần giao thứ 5 → các lần trước đã thử nhiều tông màu, lần này cần một bước rõ ràng theo đúng yêu cầu task: **thêm/dùng `--text-main` và `--text-muted`** và đảm bảo dễ đọc trên nền ảnh hiện tại.
+**Cấu trúc file:**
+- `index.html`: Giao diện gồm header (h1 + stats `Moves`/`Time` + nút Restart), grid lật bài, modal khi thắng.
+- `main.js`: Logic game, biến `currentLevel`, `moves`, `seconds`, các hàm `createBoard()`, `gameOver()`, `resetGame()`.
+- `style.css`: Có sẵn class `.stats`, `.stat-box`, `.label`, `.value` để tái sử dụng.
 
-## 2. Mục tiêu
+**Đặc điểm cần lưu ý:**
+- Game có nhiều **level** (số cặp bài tăng theo level: `6 + (currentLevel - 1) * 2`). High score phải lưu **theo từng level** vì độ khó khác nhau.
+- Có 2 chỉ số đo hiệu suất: `moves` (số bước) và `seconds` (thời gian). Đề bài cho phép chọn 1 hoặc cả 2 → **chọn lưu cả 2** để toàn diện, nhưng tiêu chí so sánh chính là **số bước (moves) ít nhất**; nếu hòa moves thì lấy thời gian ngắn hơn.
+- Lưu vào `localStorage` dưới key `memoryMatchHighScores` ở dạng JSON object `{ "<level>": { moves, seconds } }`.
 
-1. Refactor biến CSS theo đúng tên task yêu cầu: thêm `--text-main` và `--text-muted` vào `:root`.
-2. Chọn tông màu **dễ đọc** trên nền ảnh `background.png` (giả định nền có cả vùng sáng và vùng tối → giữ chữ trắng làm `--text-main` để tương phản với stroke đen vẫn là phương án an toàn nhất; `--text-muted` dùng cho text phụ).
-3. Thay thế các giá trị màu hardcoded (`#ffffff`, `#0f172a`) trong file `style.css` bằng biến CSS mới để file nhất quán và dễ chỉnh sau này.
-4. Không phá vỡ hiệu ứng outline/shadow đang có (đã được duyệt ở lần trước).
+## 2. Kế hoạch chi tiết từng bước
 
-## 3. Đề xuất bảng màu mới
+### Bước 1 — Cập nhật `index.html`: Thêm ô hiển thị High Score
 
-| Biến CSS         | Giá trị        | Dùng cho                                              |
-|------------------|----------------|-------------------------------------------------------|
-| `--text-main`    | `#fffbeb`      | Tiêu đề h1, label, value, button — tông trắng-ngà ấm, bớt chói hơn `#ffffff` thuần, hợp với accent vàng `#fbbf24` |
-| `--text-muted`   | `#1e293b`      | Text trong modal (nền sáng) — slate-800, dễ đọc hơn `#0f172a` thuần đen, vẫn đủ tương phản |
-| `--text-stroke`  | `#0f172a`      | Màu của `-webkit-text-stroke` (gom hardcode `#000000` về một biến) |
+Trong khối `<div class="stats">` (sau `stat-box` của `Time`), thêm 1 `stat-box` mới hiển thị kỷ lục của level hiện tại:
 
-Lý do chọn:
-- `#fffbeb` (amber-50) hài hòa với `--accent-color: #fbbf24` đã có → tạo cảm giác ấm, tránh trắng "lạnh" trên nền có gradient xanh.
-- `#1e293b` (slate-800) trên nền modal trắng `rgba(255,255,255,0.9)` đạt tương phản WCAG AAA.
-- Gom màu stroke về biến giúp lần sau muốn đổi chỉ sửa 1 chỗ.
+```html
+<div class="stat-box">
+    <span class="label">Best</span>
+    <span class="value" id="high-score">--</span>
+</div>
+```
 
-## 4. Các bước thực thi (cho Coder)
+- Mặc định hiển thị `--` khi level chưa có kỷ lục.
+- Khi có kỷ lục, hiển thị dạng `<moves> / <time>` (ví dụ `12 / 0:45`).
 
-### Bước 1 — Cập nhật khối `:root` trong `style.css` (dòng 1-12)
-Thay khối hiện tại:
-```css
-:root {
-    --bg-gradient-start: #e0f2fe;
-    --bg-gradient-end: #d1fae5;
-    --card-bg-front: rgba(255, 255, 255, 0.6);
-    --card-bg-back: #a7f3d0;
-    --text-color: #ffffff;
-    --text-shadow-dark: 2px 2px 4px rgba(0, 0, 0, 0.8);
-    --accent-color: #fbbf24;
-    --success-color: #10b981;
-    --shadow-glow: rgba(251, 191, 36, 0.6);
-    --shadow-dark: rgba(15, 23, 42, 0.4);
+Trong modal thắng (`#win-modal`), thêm một dòng `<p>` thông báo khi đạt kỷ lục mới:
+
+```html
+<p id="new-record-msg" style="display:none; color: var(--accent-color); font-weight: 900;">🏆 New High Score!</p>
+```
+
+Đặt dòng này ngay trước nhóm nút trong `.modal-content`.
+
+### Bước 2 — Cập nhật `main.js`: Thêm helper localStorage
+
+Thêm constant key và 2 helper ở đầu file (sau khối khai báo biến):
+
+```js
+const HIGH_SCORE_KEY = 'memoryMatchHighScores';
+
+function loadHighScores() {
+    try {
+        return JSON.parse(localStorage.getItem(HIGH_SCORE_KEY)) || {};
+    } catch (e) {
+        return {};
+    }
+}
+
+function saveHighScores(scores) {
+    localStorage.setItem(HIGH_SCORE_KEY, JSON.stringify(scores));
+}
+
+function getHighScoreForLevel(level) {
+    const scores = loadHighScores();
+    return scores[level] || null;
 }
 ```
-Thành:
-```css
-:root {
-    --bg-gradient-start: #e0f2fe;
-    --bg-gradient-end: #d1fae5;
-    --card-bg-front: rgba(255, 255, 255, 0.6);
-    --card-bg-back: #a7f3d0;
-    --text-main: #fffbeb;
-    --text-muted: #1e293b;
-    --text-stroke: #0f172a;
-    --text-shadow-dark: 2px 2px 4px rgba(0, 0, 0, 0.8);
-    --accent-color: #fbbf24;
-    --success-color: #10b981;
-    --shadow-glow: rgba(251, 191, 36, 0.6);
-    --shadow-dark: rgba(15, 23, 42, 0.4);
+
+### Bước 3 — Thêm DOM reference cho phần tử mới
+
+Thêm vào khối khai báo DOM (gần dòng 22):
+
+```js
+const highScoreDisplay = document.getElementById('high-score');
+const newRecordMsg = document.getElementById('new-record-msg');
+```
+
+### Bước 4 — Hàm cập nhật hiển thị High Score
+
+Thêm hàm mới:
+
+```js
+function updateHighScoreDisplay() {
+    const record = getHighScoreForLevel(currentLevel);
+    if (record) {
+        highScoreDisplay.textContent = `${record.moves} / ${formatTime(record.seconds)}`;
+    } else {
+        highScoreDisplay.textContent = '--';
+    }
 }
 ```
-(Đã xóa `--text-color` cũ vì sẽ thay toàn bộ usage.)
 
-### Bước 2 — Thay `body` (dòng 24)
-- `color: var(--text-color);` → `color: var(--text-main);`
+### Bước 5 — So sánh và lưu kỷ lục mới khi thắng level
 
-### Bước 3 — Thay `h1` (dòng 49-56)
-- `color: #ffffff;` → `color: var(--text-main);`
-- `-webkit-text-stroke: 2px #000000;` → `-webkit-text-stroke: 2px var(--text-stroke);`
-- Trong `text-shadow`: đổi `4px 4px 0 #000000` → `4px 4px 0 var(--text-stroke)`.
+Tạo hàm xét kỷ lục mới (so sánh ưu tiên `moves` ít hơn, nếu hòa thì `seconds` ít hơn):
 
-### Bước 4 — Thay `.stat-box .label` (dòng 76-84)
-- `color: #ffffff;` → `color: var(--text-main);`
-- `-webkit-text-stroke: 1px #000000;` → `-webkit-text-stroke: 1px var(--text-stroke);`
-- Trong `text-shadow`: `2px 2px 0 #000000` → `2px 2px 0 var(--text-stroke)`.
+```js
+function checkAndSaveHighScore() {
+    const scores = loadHighScores();
+    const current = scores[currentLevel];
+    const isNew = !current
+        || moves < current.moves
+        || (moves === current.moves && seconds < current.seconds);
 
-### Bước 5 — Thay `.stat-box .value` (dòng 86-92)
-- `color: #ffffff;` → `color: var(--text-main);`
-- `-webkit-text-stroke: 2px #000000;` → `-webkit-text-stroke: 2px var(--text-stroke);`
-- `text-shadow`: `3px 3px 0 #000000` → `3px 3px 0 var(--text-stroke)`.
+    if (isNew) {
+        scores[currentLevel] = { moves, seconds };
+        saveHighScores(scores);
+    }
+    return isNew;
+}
+```
 
-### Bước 6 — Thay `.btn` (dòng 94-108)
-- `color: #ffffff;` → `color: var(--text-main);`
-- `-webkit-text-stroke: 1px #000000;` → `-webkit-text-stroke: 1px var(--text-stroke);`
-- `text-shadow: 2px 2px 0 #000000;` → `text-shadow: 2px 2px 0 var(--text-stroke);`.
+### Bước 6 — Tích hợp vào `gameOver()`
 
-### Bước 7 — Thay `.primary-btn` (dòng 116-125)
-- `color: #ffffff;` → `color: var(--text-main);`
-- `-webkit-text-stroke: 1.5px #000000;` → `-webkit-text-stroke: 1.5px var(--text-stroke);`
-- `text-shadow: 3px 3px 0 #000000;` → `text-shadow: 3px 3px 0 var(--text-stroke);`.
+Sửa hàm `gameOver()` để: (1) gọi `checkAndSaveHighScore()`, (2) hiển thị/ẩn dòng "New High Score!", (3) cập nhật lại ô Best trên header.
 
-### Bước 8 — Thay `.modal-content h2` (dòng 241-248)
-- `color: #ffffff;` → `color: var(--text-main);`
-- `-webkit-text-stroke: 2px #0f172a;` → `-webkit-text-stroke: 2px var(--text-stroke);`
-- `text-shadow: 4px 4px 0 #0f172a;` → `text-shadow: 4px 4px 0 var(--text-stroke);`.
+```js
+function gameOver() {
+    stopTimer();
+    const isNewRecord = checkAndSaveHighScore();
+    setTimeout(() => {
+        finalMoves.textContent = moves;
+        finalTime.textContent = formatTime(seconds);
+        newRecordMsg.style.display = isNewRecord ? 'block' : 'none';
+        updateHighScoreDisplay();
+        modalOverlay.classList.add('active');
+    }, 500);
+}
+```
 
-### Bước 9 — Thay `.modal-content p` (dòng 250-255)
-- `color: #0f172a;` → `color: var(--text-muted);`
+### Bước 7 — Cập nhật High Score khi chuyển level / restart
 
-### Bước 10 — Kiểm tra cuối
-- Mở `index.html` trong trình duyệt, xác minh:
-  - Tiêu đề h1 vẫn nổi bật trên nền ảnh.
-  - Modal "Level Cleared!" có chữ h2 trắng-ngà với stroke đen, chữ p màu slate đậm — đều đọc rõ trên nền modal trắng mờ.
-  - Buttons (Restart, Play Again, Next Level) text trắng-ngà, viền đen rõ.
-  - Không có chỗ nào bị chữ trắng trên nền trắng hoặc đen trên nền đen.
+Trong `resetGame()`, sau khi `createBoard()`, gọi `updateHighScoreDisplay()` để ô Best hiển thị đúng cho level hiện tại:
 
-## 5. Phạm vi KHÔNG đụng tới
+```js
+function resetGame() {
+    // ... code cũ ...
+    createBoard();
+    updateHighScoreDisplay();  // <-- thêm dòng này
+}
+```
 
-- `index.html`, `main.js`: không sửa.
-- Background, layout, kích thước font, font-family: giữ nguyên (font Black Ops One đã được duyệt ở commit gần nhất `46614d3`).
-- Các biến không liên quan tới text (`--card-bg-*`, `--accent-color`, `--success-color`, `--shadow-*`): giữ nguyên.
+Đồng thời, ở cuối file (sau `createBoard();` khởi tạo), thêm:
 
-## 6. Tiêu chí nghiệm thu
+```js
+updateHighScoreDisplay();
+```
 
-- [ ] `:root` có 3 biến mới: `--text-main`, `--text-muted`, `--text-stroke`.
-- [ ] Không còn literal `#ffffff`, `#000000`, `#0f172a` nào trong các rule liên quan tới `color` / `-webkit-text-stroke` / `text-shadow` của text (các giá trị `rgba(...)` cho background/shadow vẫn giữ).
-- [ ] Toàn bộ text trong game vẫn đọc được rõ ràng trên nền `background.png`.
-- [ ] Không có lỗi console / không vỡ layout.
+để hiển thị ngay khi vừa load trang.
+
+### Bước 8 — (Tùy chọn) CSS điều chỉnh
+
+`stat-box` hiện tại có `min-width: 100px` và `font-size: 2rem` cho `.value`. Vì chuỗi `12 / 0:45` dài hơn, kiểm tra trên mobile (`max-width: 500px`) xem có bị tràn không. Nếu cần, có thể thêm vào `style.css`:
+
+```css
+#high-score {
+    font-size: 1.4rem; /* nhỏ hơn vì chứa cả moves và time */
+}
+```
+
+(Coder quyết định có cần thêm hay không sau khi xem thử bố cục.)
+
+## 3. Tổng hợp file cần thay đổi
+
+| File | Thay đổi |
+|---|---|
+| `index.html` | Thêm `stat-box` Best Score; thêm dòng "New High Score!" trong modal |
+| `main.js` | Thêm constant, helper localStorage, hàm `updateHighScoreDisplay`, hàm `checkAndSaveHighScore`, sửa `gameOver` và `resetGame`, gọi cập nhật khi khởi tạo |
+| `style.css` | (Tùy chọn) Tinh chỉnh font-size cho `#high-score` nếu bị tràn |
+
+## 4. Kiểm thử
+
+1. Mở `index.html`, chơi xong 1 level → kiểm tra ô Best có cập nhật, modal hiển thị "New High Score!".
+2. Chơi lại level đó với số bước nhiều hơn → kỷ lục giữ nguyên, KHÔNG hiển thị thông báo.
+3. Chơi lại với số bước ít hơn → kỷ lục cập nhật, hiển thị thông báo.
+4. Chuyển sang level 2 → ô Best hiển thị `--` (vì chưa có kỷ lục cho level 2).
+5. Refresh trình duyệt (F5) → ô Best vẫn hiển thị đúng kỷ lục đã lưu (xác nhận `localStorage` hoạt động).
+6. Mở DevTools → Application → Local Storage, kiểm tra key `memoryMatchHighScores` tồn tại với cấu trúc JSON đúng.
