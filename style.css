@@ -18,7 +18,7 @@
 }
 
 body {
-    font-family: 'Comic Neue', cursive, sans-serif;
+    font-family: 'Black Ops One', cursive, sans-serif;
     background: url('background.png') center center fixed;
     background-size: cover;
     color: var(--text-color);
