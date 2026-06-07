@@ -1,0 +1,11 @@
+Đã lưu kế hoạch chi tiết vào `agent_plan.md` ở thư mục gốc dự án.
+
+**Tóm tắt kế hoạch:**
+- **Phân tích:** Dự án chỉ có 1 file CSS (`style.css`). Hiện tại chỉ có biến `--text-color` chứ chưa có `--text-main` / `--text-muted` như task yêu cầu. Background là ảnh `background.png` (đa tông).
+- **Đề xuất bảng màu:**
+  - `--text-main: #fffbeb` (trắng ngà ấm, hài hòa với accent vàng) — cho h1, label, value, button
+  - `--text-muted: #1e293b` (slate-800) — cho text trong modal nền sáng
+  - `--text-stroke: #0f172a` — gom màu viền chữ về 1 biến
+- **10 bước thực thi cụ thể** cho Coder, kèm số dòng và đoạn code thay thế cho từng selector (`:root`, `body`, `h1`, `.stat-box .label/.value`, `.btn`, `.primary-btn`, `.modal-content h2/p`).
+- **Phạm vi:** chỉ sửa `style.css`, không đụng `index.html` / `main.js` / font đã duyệt.
+- **Tiêu chí nghiệm thu** rõ ràng để verify.
