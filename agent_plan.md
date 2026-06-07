@@ -1,175 +1,132 @@
-# Kế hoạch triển khai: Thêm tính năng High Score
+# Kế hoạch thực thi — Đổi ảnh nền sang cảnh thiên nhiên phong cách Ghibli
 
-## 1. Phân tích hiện trạng
+## 0. Bối cảnh & Phát hiện quan trọng
 
-**Dự án:** Memory Match Game (lật bài tìm cặp emoji)
+- **Cấu trúc thực tế của dự án:** Toàn bộ source code mini game nằm ở **thư mục gốc** `D:\workspace\supperseo2018\MiniGame\`, **KHÔNG có thư mục con `memory_match_game/`** như mô tả trong task. Các file liên quan:
+  - `index.html`
+  - `style.css`
+  - `main.js`
+  - `background.png` (ảnh nền hiện tại, 822 KB)
+- **Tham chiếu trong CSS:** `style.css` (dòng 24) đang dùng `background: url('background.png') center center fixed;` với `background-size: cover;` — tức là ảnh nền load từ đường dẫn tương đối ngay tại thư mục gốc.
+- **Hệ quả:** Coder phải thay file `background.png` tại **thư mục gốc dự án**, không tạo thư mục `memory_match_game/` mới.
+- **Theme hiện tại (galaxy/dark):** Chữ trắng có viền/đổ bóng tím-indigo đậm, các stat-box và modal dùng glassmorphism nền tối (`rgba(15, 23, 42, 0.x)`). Khi đổi sang nền pastel sáng phong cách Ghibli, các thành phần này vẫn còn đủ độ tương phản, nhưng cần thêm một lớp overlay nhẹ ở body để đảm bảo card và text luôn nổi bật trên mọi vùng của ảnh nền.
 
-**Cấu trúc file:**
-- `index.html`: Giao diện gồm header (h1 + stats `Moves`/`Time` + nút Restart), grid lật bài, modal khi thắng.
-- `main.js`: Logic game, biến `currentLevel`, `moves`, `seconds`, các hàm `createBoard()`, `gameOver()`, `resetGame()`.
-- `style.css`: Có sẵn class `.stats`, `.stat-box`, `.label`, `.value` để tái sử dụng.
+---
 
-**Đặc điểm cần lưu ý:**
-- Game có nhiều **level** (số cặp bài tăng theo level: `6 + (currentLevel - 1) * 2`). High score phải lưu **theo từng level** vì độ khó khác nhau.
-- Có 2 chỉ số đo hiệu suất: `moves` (số bước) và `seconds` (thời gian). Đề bài cho phép chọn 1 hoặc cả 2 → **chọn lưu cả 2** để toàn diện, nhưng tiêu chí so sánh chính là **số bước (moves) ít nhất**; nếu hòa moves thì lấy thời gian ngắn hơn.
-- Lưu vào `localStorage` dưới key `memoryMatchHighScores` ở dạng JSON object `{ "<level>": { moves, seconds } }`.
+## 1. Mục tiêu
 
-## 2. Kế hoạch chi tiết từng bước
+1. Thay ảnh `background.png` ở thư mục gốc bằng một ảnh nền cảnh thiên nhiên phong cách **Studio Ghibli**: bầu trời pastel (xanh nhạt → hồng/đào), mây trắng bồng bềnh, đồi cỏ xanh non, có thể có vài bụi cây/cây silhouette.
+2. Đảm bảo layout không vỡ; các thẻ bài (`.card`), header, stats, modal đều rõ ràng, dễ đọc trên nền mới.
+3. Điều chỉnh `style.css` thêm overlay nhẹ và tinh chỉnh để giữ độ tương phản cho UI.
 
-### Bước 1 — Cập nhật `index.html`: Thêm ô hiển thị High Score
+---
 
-Trong khối `<div class="stats">` (sau `stat-box` của `Time`), thêm 1 `stat-box` mới hiển thị kỷ lục của level hiện tại:
+## 2. Các bước thực thi (step-by-step)
 
-```html
-<div class="stat-box">
-    <span class="label">Best</span>
-    <span class="value" id="high-score">--</span>
-</div>
+### Bước 1 — Tạo ảnh nền `background.png` mới phong cách Ghibli
+
+**Cách tiếp cận:** Vì môi trường là Windows + PowerShell, tạo ảnh thủ tục (procedurally) bằng .NET `System.Drawing.Common` để dựng cảnh pastel. Cách này lặp lại được, không phụ thuộc tải file ngoài.
+
+- **Kích thước ảnh:** `1920x1080` (đủ lớn để `background-size: cover` không bị mờ trên màn hình lớn).
+- **Bố cục từ trên xuống dưới:**
+  - **Trời (60% phía trên):** Gradient dọc từ `#BFE3F5` (xanh trời nhạt) → `#FFD6C0` (hồng đào pastel) ở vùng chân trời.
+  - **Mặt trời mờ (tùy chọn):** Vòng tròn `#FFF4D6` mờ, bán kính ~120 px, đặt lệch trái-trên (`x ≈ 480, y ≈ 280`).
+  - **Mây trắng:** 5–7 cụm mây bằng cách vẽ chồng nhiều ellipse trắng `#FFFFFF` với alpha ~85%, kích thước và vị trí ngẫu nhiên trong nửa trên.
+  - **Đồi sau (40% phía dưới, lớp xa):** Bezier/đường cong xanh pastel `#B8D9A8` chiếm ~30% chiều cao dưới.
+  - **Đồi trước (lớp gần):** Bezier xanh đậm hơn `#8FBF7A` chiếm ~20% chiều cao dưới cùng.
+  - **Cây silhouette (tùy chọn):** 2–3 cây tròn nhỏ màu `#6FA463` đặt trên đường chân đồi để tăng độ "Ghibli".
+- **Lưu file:** Ghi đè `D:\workspace\supperseo2018\MiniGame\background.png` (PNG, RGB).
+
+**Script gợi ý (PowerShell, dùng `System.Drawing.Common`):** Coder có thể viết một script ngắn tạo `Bitmap`, dùng `LinearGradientBrush` cho trời, `SolidBrush` với alpha cho mây, và `FillPath` cho đường cong đồi. Lưu bằng `bitmap.Save("background.png", [System.Drawing.Imaging.ImageFormat]::Png)`.
+
+**Tiêu chí chấp nhận cho ảnh:**
+- Tông màu pastel sáng, ấm áp, không có vùng nào quá tối hoặc quá chói.
+- Khi `background-size: cover` được áp dụng ở các tỉ lệ màn hình khác nhau (16:9, 4:3, mobile dọc), bố cục vẫn nhận ra được trời ở trên + đồi ở dưới.
+
+### Bước 2 — Thêm lớp overlay nhẹ trong `style.css` để giữ độ tương phản
+
+Trong `style.css`, thêm một pseudo-element `body::before` phủ toàn màn để:
+- Làm dịu (slight wash) nền ở vùng có cụm mây trắng (tránh chữ trắng của `h1` chìm vào mây).
+- Tăng tương phản nhẹ cho các thẻ bài và stat-box.
+
+**Sửa cụ thể trong `style.css`:**
+
+1. Trong khối `body { ... }` (dòng 22–33), giữ nguyên thuộc tính `background`, nhưng thêm `position: relative;` và `z-index: 0;` để đảm bảo `::before` hoạt động đúng.
+2. Thêm khối mới ngay sau khối `body`:
+   ```css
+   body::before {
+       content: '';
+       position: fixed;
+       inset: 0;
+       background: linear-gradient(
+           180deg,
+           rgba(30, 27, 75, 0.18) 0%,
+           rgba(30, 27, 75, 0.08) 50%,
+           rgba(30, 27, 75, 0.22) 100%
+       );
+       pointer-events: none;
+       z-index: -1;
+   }
+   ```
+   - Lớp này tối nhẹ ở đỉnh và đáy (giúp tiêu đề "Memory Match" trắng + viền indigo tiếp tục nổi bật trên cụm mây trắng) và gần như trong suốt ở giữa (để vùng cards vẫn nhìn rõ cảnh nền Ghibli).
+3. Đảm bảo `.game-container` (dòng 35–42) có `position: relative;` để nó nằm trên overlay (mặc định nó đã là static block flex; thêm `position: relative;` an toàn).
+
+### Bước 3 — Tinh chỉnh `.card-front` để giữ rõ ràng trên nền sáng
+
+Trên nền pastel sáng, mặt sau (úp) của card hiện tại dùng `rgba(255, 255, 255, 0.6)` có thể bị "chìm" vào vùng mây trắng. Cần tăng độ tương phản viền và làm nền card-front đậm hơn một chút:
+
+- Trong `style.css` dòng 173–179, đổi `.card-front`:
+  - `background: rgba(255, 255, 255, 0.75);` (từ `0.6` lên `0.75`).
+  - Thêm `border: 1.5px solid rgba(167, 139, 250, 0.55);` (viền lavender mảnh — vừa hài hòa Ghibli vừa làm card không chìm vào mây).
+- Giữ nguyên `.card-front::after` (dấu `?` violet) — tông tím nhạt vẫn hợp tông Ghibli.
+
+### Bước 4 — Kiểm thử thủ công (manual verification)
+
+1. Mở `index.html` bằng trình duyệt (Chrome/Edge). Mục tiêu kiểm:
+   - Ảnh nền hiển thị full màn, không bị méo hoặc lặp tile.
+   - Tiêu đề "Memory Match (Level 1)" rõ nét, không lẫn vào mây/trời.
+   - Các stat-box (Moves / Time / Best) đọc được dễ dàng.
+   - Card mặt úp (`?`) phân biệt rõ với nền, không bị "tan" vào vùng mây trắng.
+   - Click một vài card → mặt sau lavender hiện đẹp; khi match thành công, mặt xanh `--success-color` vẫn nổi.
+   - Mở modal "Level Cleared" (cách nhanh: lật đủ cặp ở level 1 hoặc tạm chỉnh `numPairs` để test) → modal nền tối vẫn rõ ràng.
+2. Kiểm tra responsive bằng DevTools (375×667 — mobile dọc): bố cục ảnh nền vẫn nhận ra cảnh thiên nhiên, không bị crop mất hết phần đồi.
+
+### Bước 5 — Commit & tổng kết thay đổi
+
+Sau khi mọi thứ ổn, commit thay đổi với message tiếng Việt phù hợp lịch sử commit dự án, ví dụ:
 ```
-
-- Mặc định hiển thị `--` khi level chưa có kỷ lục.
-- Khi có kỷ lục, hiển thị dạng `<moves> / <time>` (ví dụ `12 / 0:45`).
-
-Trong modal thắng (`#win-modal`), thêm một dòng `<p>` thông báo khi đạt kỷ lục mới:
-
-```html
-<p id="new-record-msg" style="display:none; color: var(--accent-color); font-weight: 900;">🏆 New High Score!</p>
+Task: Đổi ảnh nền sang cảnh thiên nhiên phong cách Ghibli
 ```
+Files thay đổi:
+- `background.png` (binary, ghi đè)
+- `style.css` (thêm `body::before`, tinh chỉnh `.card-front`, thêm `position: relative` cho body/game-container nếu cần)
 
-Đặt dòng này ngay trước nhóm nút trong `.modal-content`.
+---
 
-### Bước 2 — Cập nhật `main.js`: Thêm helper localStorage
+## 3. Danh sách file sẽ chỉnh sửa
 
-Thêm constant key và 2 helper ở đầu file (sau khối khai báo biến):
-
-```js
-const HIGH_SCORE_KEY = 'memoryMatchHighScores';
-
-function loadHighScores() {
-    try {
-        return JSON.parse(localStorage.getItem(HIGH_SCORE_KEY)) || {};
-    } catch (e) {
-        return {};
-    }
-}
-
-function saveHighScores(scores) {
-    localStorage.setItem(HIGH_SCORE_KEY, JSON.stringify(scores));
-}
-
-function getHighScoreForLevel(level) {
-    const scores = loadHighScores();
-    return scores[level] || null;
-}
-```
-
-### Bước 3 — Thêm DOM reference cho phần tử mới
-
-Thêm vào khối khai báo DOM (gần dòng 22):
-
-```js
-const highScoreDisplay = document.getElementById('high-score');
-const newRecordMsg = document.getElementById('new-record-msg');
-```
-
-### Bước 4 — Hàm cập nhật hiển thị High Score
-
-Thêm hàm mới:
-
-```js
-function updateHighScoreDisplay() {
-    const record = getHighScoreForLevel(currentLevel);
-    if (record) {
-        highScoreDisplay.textContent = `${record.moves} / ${formatTime(record.seconds)}`;
-    } else {
-        highScoreDisplay.textContent = '--';
-    }
-}
-```
-
-### Bước 5 — So sánh và lưu kỷ lục mới khi thắng level
-
-Tạo hàm xét kỷ lục mới (so sánh ưu tiên `moves` ít hơn, nếu hòa thì `seconds` ít hơn):
-
-```js
-function checkAndSaveHighScore() {
-    const scores = loadHighScores();
-    const current = scores[currentLevel];
-    const isNew = !current
-        || moves < current.moves
-        || (moves === current.moves && seconds < current.seconds);
-
-    if (isNew) {
-        scores[currentLevel] = { moves, seconds };
-        saveHighScores(scores);
-    }
-    return isNew;
-}
-```
-
-### Bước 6 — Tích hợp vào `gameOver()`
-
-Sửa hàm `gameOver()` để: (1) gọi `checkAndSaveHighScore()`, (2) hiển thị/ẩn dòng "New High Score!", (3) cập nhật lại ô Best trên header.
-
-```js
-function gameOver() {
-    stopTimer();
-    const isNewRecord = checkAndSaveHighScore();
-    setTimeout(() => {
-        finalMoves.textContent = moves;
-        finalTime.textContent = formatTime(seconds);
-        newRecordMsg.style.display = isNewRecord ? 'block' : 'none';
-        updateHighScoreDisplay();
-        modalOverlay.classList.add('active');
-    }, 500);
-}
-```
-
-### Bước 7 — Cập nhật High Score khi chuyển level / restart
-
-Trong `resetGame()`, sau khi `createBoard()`, gọi `updateHighScoreDisplay()` để ô Best hiển thị đúng cho level hiện tại:
-
-```js
-function resetGame() {
-    // ... code cũ ...
-    createBoard();
-    updateHighScoreDisplay();  // <-- thêm dòng này
-}
-```
-
-Đồng thời, ở cuối file (sau `createBoard();` khởi tạo), thêm:
-
-```js
-updateHighScoreDisplay();
-```
-
-để hiển thị ngay khi vừa load trang.
-
-### Bước 8 — (Tùy chọn) CSS điều chỉnh
-
-`stat-box` hiện tại có `min-width: 100px` và `font-size: 2rem` cho `.value`. Vì chuỗi `12 / 0:45` dài hơn, kiểm tra trên mobile (`max-width: 500px`) xem có bị tràn không. Nếu cần, có thể thêm vào `style.css`:
-
-```css
-#high-score {
-    font-size: 1.4rem; /* nhỏ hơn vì chứa cả moves và time */
-}
-```
-
-(Coder quyết định có cần thêm hay không sau khi xem thử bố cục.)
-
-## 3. Tổng hợp file cần thay đổi
-
-| File | Thay đổi |
+| File | Hành động |
 |---|---|
-| `index.html` | Thêm `stat-box` Best Score; thêm dòng "New High Score!" trong modal |
-| `main.js` | Thêm constant, helper localStorage, hàm `updateHighScoreDisplay`, hàm `checkAndSaveHighScore`, sửa `gameOver` và `resetGame`, gọi cập nhật khi khởi tạo |
-| `style.css` | (Tùy chọn) Tinh chỉnh font-size cho `#high-score` nếu bị tràn |
+| `background.png` (thư mục gốc) | **Ghi đè** bằng ảnh Ghibli pastel mới (1920x1080 PNG) |
+| `style.css` | Thêm `body::before` overlay; tăng opacity `.card-front`; thêm `position: relative` cho body/game-container |
+| `index.html` | **Không sửa** |
+| `main.js` | **Không sửa** |
 
-## 4. Kiểm thử
+---
 
-1. Mở `index.html`, chơi xong 1 level → kiểm tra ô Best có cập nhật, modal hiển thị "New High Score!".
-2. Chơi lại level đó với số bước nhiều hơn → kỷ lục giữ nguyên, KHÔNG hiển thị thông báo.
-3. Chơi lại với số bước ít hơn → kỷ lục cập nhật, hiển thị thông báo.
-4. Chuyển sang level 2 → ô Best hiển thị `--` (vì chưa có kỷ lục cho level 2).
-5. Refresh trình duyệt (F5) → ô Best vẫn hiển thị đúng kỷ lục đã lưu (xác nhận `localStorage` hoạt động).
-6. Mở DevTools → Application → Local Storage, kiểm tra key `memoryMatchHighScores` tồn tại với cấu trúc JSON đúng.
+## 4. Rủi ro & lưu ý
+
+- **Đường dẫn tương đối:** Vì `style.css` dùng `url('background.png')` (không có `./`), file phải nằm cùng cấp với `style.css`. Đặt sai vị trí (vd. tạo `memory_match_game/background.png` theo lời mô tả task) sẽ làm ảnh không load.
+- **Cache trình duyệt:** Sau khi thay PNG, dùng hard-reload (Ctrl+F5) để chắc chắn không xem nhầm bản cũ.
+- **Đừng sửa thêm theme dark/galaxy không cần thiết:** Task chỉ yêu cầu đổi nền — không refactor màu chữ chính, không động vào `:root` variables nếu không bắt buộc, để giữ scope thay đổi gọn.
+- **System.Drawing.Common trên PowerShell:** Trên Windows PowerShell 5.1 đã có sẵn (`Add-Type -AssemblyName System.Drawing`). Nếu môi trường là PowerShell 7+, có thể cần install thêm package, nhưng task này nên chạy bằng `powershell.exe` (Win PS 5.1) để đơn giản.
+
+---
+
+## 5. Tiêu chí hoàn thành (Definition of Done)
+
+- [ ] `background.png` mới là cảnh thiên nhiên pastel Ghibli (trời + mây + đồi), đặt đúng tại thư mục gốc dự án.
+- [ ] Game mở trong trình duyệt hiển thị nền mới full màn, không vỡ layout.
+- [ ] Tiêu đề, stat-box, card mặt úp, card mặt mở, modal đều dễ đọc và rõ nét trên nền mới.
+- [ ] `style.css` được cập nhật với overlay nhẹ và tinh chỉnh `.card-front`; không có lỗi cú pháp.
+- [ ] Commit cuối với message mô tả task bằng tiếng Việt.

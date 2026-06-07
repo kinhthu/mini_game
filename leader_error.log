@@ -1,10 +1,10 @@
-Đã tạo `agent_plan.md` với kế hoạch chi tiết.
+Đã lập kế hoạch chi tiết và lưu vào `agent_plan.md`. (Task này là một bản kế hoạch ngắn cho Coder, không cần track tasks nội bộ.)
 
-**Tóm tắt kế hoạch:**
-- **Lưu trữ:** `localStorage` key `memoryMatchHighScores`, dạng `{ "<level>": { moves, seconds } }` — lưu kỷ lục **theo từng level** vì độ khó khác nhau.
-- **Tiêu chí kỷ lục:** Ưu tiên số bước (moves) ít nhất; hòa moves thì so thời gian.
-- **UI:** Thêm 1 `stat-box` "Best" trong header hiển thị `<moves> / <time>`, và dòng "🏆 New High Score!" trong modal khi đạt kỷ lục mới.
-- **Logic:** 8 bước rõ ràng — từ thêm HTML, helper localStorage, hàm cập nhật/so sánh, đến tích hợp vào `gameOver()` và `resetGame()`.
-- **Test plan:** 6 case kiểm thử bao gồm cả persistence sau khi refresh.
+**Phát hiện quan trọng đã ghi rõ trong plan:** Dự án **không có thư mục `memory_match_game/`** như mô tả task — toàn bộ source (`index.html`, `style.css`, `main.js`, `background.png`) nằm ở **thư mục gốc**, và `style.css` tham chiếu `url('background.png')` theo đường dẫn tương đối tại đây. Coder phải ghi đè `background.png` tại gốc, không tạo thư mục mới.
 
-Coder có thể đọc file `agent_plan.md` ở thư mục gốc để thực thi.
+**Tóm tắt 5 bước trong plan:**
+1. Sinh `background.png` mới (1920×1080) bằng PowerShell + `System.Drawing` — bố cục: trời pastel gradient + mây trắng + đồi cỏ 2 lớp + cây silhouette tùy chọn.
+2. Thêm `body::before` overlay gradient mờ (tối nhẹ đỉnh/đáy, gần trong suốt giữa) trong `style.css` để giữ tương phản cho tiêu đề trắng và stat-box.
+3. Tinh chỉnh `.card-front` (opacity 0.6 → 0.75, thêm viền lavender mảnh) để card không chìm vào vùng mây trắng.
+4. Test thủ công trên Chrome/Edge + responsive (375×667).
+5. Commit với message tiếng Việt theo phong cách lịch sử dự án.

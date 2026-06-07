@@ -21,8 +21,6 @@
 
 body {
     font-family: 'Black Ops One', cursive, sans-serif;
-    background: url('background.png') center center fixed;
-    background-size: cover;
     color: var(--text-main);
     min-height: 100vh;
     display: flex;
@@ -30,6 +28,32 @@ body {
     align-items: center;
     overflow-y: auto; /* Responsive overflow fix */
     padding: 2rem 1rem;
+    position: relative;
+    z-index: 0;
+}
+
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: url('background.png') center center no-repeat;
+    background-size: cover;
+    pointer-events: none;
+    z-index: -2;
+}
+
+body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: linear-gradient(
+        180deg,
+        rgba(30, 27, 75, 0.18) 0%,
+        rgba(30, 27, 75, 0.08) 50%,
+        rgba(30, 27, 75, 0.22) 100%
+    );
+    pointer-events: none;
+    z-index: -1;
 }
 
 .game-container {
@@ -171,16 +195,16 @@ h1 {
 }
 
 .card-front {
-    background: var(--card-bg-front);
-    border: 1px solid rgba(255, 255, 255, 0.6);
+    background: rgba(255, 255, 255, 0.75);
+    border: 1.5px solid rgba(167, 139, 250, 0.55);
     backdrop-filter: blur(10px);
     background-image: linear-gradient(135deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.1) 100%);
     transition: background 0.3s ease, border-color 0.3s ease;
 }
 
 .card-front:hover {
-    background: rgba(255, 255, 255, 0.8);
-    border-color: rgba(255, 255, 255, 0.9);
+    background: rgba(255, 255, 255, 0.9);
+    border-color: rgba(167, 139, 250, 0.85);
 }
 
 /* The "?" icon placeholder */
