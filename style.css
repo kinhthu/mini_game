@@ -3,11 +3,12 @@
     --bg-gradient-end: #d1fae5;
     --card-bg-front: rgba(255, 255, 255, 0.6);
     --card-bg-back: #a7f3d0;
-    --text-color: #0f172a;
-    --accent-color: #0284c7;
+    --text-color: #ffffff;
+    --text-shadow-dark: 2px 2px 4px rgba(0, 0, 0, 0.8);
+    --accent-color: #fbbf24;
     --success-color: #10b981;
-    --shadow-glow: rgba(56, 189, 248, 0.4);
-    --shadow-dark: rgba(15, 23, 42, 0.08);
+    --shadow-glow: rgba(251, 191, 36, 0.6);
+    --shadow-dark: rgba(15, 23, 42, 0.4);
 }
 
 * {
@@ -48,10 +49,9 @@ header {
 h1 {
     font-size: 3rem;
     font-weight: 800;
-    background: linear-gradient(to right, var(--accent-color), #059669);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    text-shadow: 0 4px 20px var(--shadow-glow);
+    color: var(--text-color);
+    text-shadow: var(--text-shadow-dark), 0 0 15px var(--shadow-glow);
+    letter-spacing: 1px;
 }
 
 .stats {
@@ -74,7 +74,8 @@ h1 {
 
 .stat-box .label {
     font-size: 0.875rem;
-    color: #475569;
+    color: #f8fafc;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
     text-transform: uppercase;
     letter-spacing: 0.05em;
     font-weight: 600;
@@ -84,12 +85,14 @@ h1 {
     font-size: 1.5rem;
     font-weight: 800;
     color: var(--text-color);
+    text-shadow: var(--text-shadow-dark);
 }
 
 .btn {
-    background: rgba(255, 255, 255, 0.5);
+    background: rgba(255, 255, 255, 0.2);
     border: 1px solid rgba(255, 255, 255, 0.8);
     color: var(--text-color);
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
     padding: 0.75rem 1.5rem;
     border-radius: 0.75rem;
     font-family: inherit;
