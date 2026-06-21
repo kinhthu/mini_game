@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "projectManager": {
+      "url": "http://localhost:5049/mcp",
+      "headers": {
+        "Authorization": "Bearer 8b41d864398a7b33bb0589804424411c15f71edd6902c348711eb306a15f5b64:23ee7f58-dbad-438c-9ef5-bf4264fb2a1e"
+      }
+    }
+  }
+}

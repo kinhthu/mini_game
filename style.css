@@ -21,17 +21,100 @@ body {
     min-height: 100vh;
     display: flex;
     justify-content: center;
+    align-items: flex-start;
+    padding: 2rem 1rem;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+.lobby-wrapper {
+    width: 100%;
+    max-width: 600px;
+    display: flex;
+    flex-direction: column;
     align-items: center;
-    overflow: hidden;
+    gap: 1.5rem;
+}
+
+.game-tabs {
+    display: flex;
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 100px;
+    padding: 0.35rem;
+    gap: 0.5rem;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    width: 100%;
+    max-width: 420px;
+}
+
+.tab-btn {
+    flex: 1;
+    background: transparent;
+    border: 1px solid transparent;
+    outline: none;
+    color: #94a3b8;
+    padding: 0.75rem 1.25rem;
+    border-radius: 100px;
+    font-family: inherit;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    backdrop-filter: blur(5px);
+}
+
+.tab-btn:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.tab-btn.active {
+    color: #fff;
+    background: linear-gradient(135deg, rgba(251, 113, 133, 0.2), rgba(244, 63, 94, 0.4));
+    border: 1px solid rgba(251, 113, 133, 0.4);
+    box-shadow: 0 0 15px rgba(251, 113, 133, 0.3);
+}
+
+.tab-btn[data-tab="caro"].active {
+    background: linear-gradient(135deg, rgba(6, 182, 212, 0.2), rgba(59, 130, 246, 0.4));
+    border: 1px solid rgba(6, 182, 212, 0.4);
+    box-shadow: 0 0 15px rgba(6, 182, 212, 0.3);
+}
+
+.game-section {
+    width: 100%;
+    display: none;
+    animation: fadeIn 0.5s ease;
+}
+
+.game-section.active {
+    display: block;
 }
 
 .game-container {
     width: 100%;
-    max-width: 600px;
-    padding: 2rem;
+    padding: 1rem 0;
     display: flex;
     flex-direction: column;
     gap: 2rem;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 header {
@@ -251,3 +334,184 @@ h1 {
     }
     h1 { font-size: 2.5rem; }
 }
+
+/* ==========================================
+   Caro (Gomoku) Game Styles
+   ========================================== */
+
+.mode-toggle {
+    display: flex;
+    background: rgba(255, 255, 255, 0.02);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 50px;
+    padding: 0.25rem;
+    gap: 0.25rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    margin-bottom: 0.5rem;
+}
+
+.btn-toggle {
+    background: transparent;
+    border: none;
+    outline: none;
+    color: #94a3b8;
+    padding: 0.5rem 1.25rem;
+    border-radius: 50px;
+    font-family: inherit;
+    font-weight: 600;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-toggle:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.btn-toggle.active {
+    color: #fff;
+    background: linear-gradient(135deg, rgba(6, 182, 212, 0.2), rgba(59, 130, 246, 0.4));
+    border: 1px solid rgba(6, 182, 212, 0.4);
+    box-shadow: 0 0 10px rgba(6, 182, 212, 0.2);
+}
+
+.turn-indicator {
+    padding: 0.2rem 0.6rem;
+    border-radius: 0.25rem;
+    font-weight: 800;
+}
+
+.turn-x {
+    color: #fb7185;
+    text-shadow: 0 0 5px rgba(251, 113, 133, 0.5);
+}
+
+.turn-o {
+    color: #06b6d4;
+    text-shadow: 0 0 5px rgba(6, 182, 212, 0.5);
+}
+
+/* Caro Board Layout */
+.caro-board-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    display: flex;
+    justify-content: center;
+    padding: 0.5rem;
+    -webkit-overflow-scrolling: touch;
+}
+
+.caro-board {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    grid-template-rows: repeat(12, 1fr);
+    gap: 3px;
+    width: 100%;
+    max-width: 480px;
+    min-width: 360px; /* Safeguard minimum size for cells on smaller screens */
+    aspect-ratio: 1 / 1;
+    background: rgba(255, 255, 255, 0.02);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 1rem;
+    padding: 8px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.caro-cell {
+    aspect-ratio: 1 / 1;
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.03);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    user-select: none;
+    touch-action: manipulation;
+    position: relative;
+}
+
+.caro-cell:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Cell symbols placement */
+.caro-cell.x {
+    color: #fb7185;
+    text-shadow: 0 0 8px rgba(251, 113, 133, 0.8), 0 0 15px rgba(251, 113, 133, 0.4);
+    animation: placeMark 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.caro-cell.o {
+    color: #06b6d4;
+    text-shadow: 0 0 8px rgba(6, 182, 212, 0.8), 0 0 15px rgba(6, 182, 212, 0.4);
+    animation: placeMark 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes placeMark {
+    0% {
+        transform: scale(0.5);
+        opacity: 0;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* CSS-Only Hover Preview for Caro Cells */
+.caro-board.turn-x .caro-cell:not(.x):not(.o):hover::after {
+    content: 'X';
+    opacity: 0.25;
+    color: #fb7185;
+    text-shadow: 0 0 5px rgba(251, 113, 133, 0.4);
+}
+
+.caro-board.turn-o .caro-cell:not(.x):not(.o):hover::after {
+    content: 'O';
+    opacity: 0.25;
+    color: #06b6d4;
+    text-shadow: 0 0 5px rgba(6, 182, 212, 0.4);
+}
+
+/* Winning cells highlight style */
+.caro-cell.win-highlight {
+    background: rgba(16, 185, 129, 0.2);
+    border-color: rgba(16, 185, 129, 0.5);
+    box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
+    animation: winPulse 1s infinite alternate;
+}
+
+@keyframes winPulse {
+    0% {
+        transform: scale(1);
+        box-shadow: 0 0 10px rgba(16, 185, 129, 0.4);
+    }
+    100% {
+        transform: scale(1.05);
+        box-shadow: 0 0 20px rgba(16, 185, 129, 0.8);
+    }
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 480px) {
+    .caro-board {
+        min-width: 320px;
+        padding: 6px;
+        gap: 2px;
+    }
+    .caro-cell {
+        font-size: 1.25rem;
+        border-radius: 4px;
+    }
+}
+
