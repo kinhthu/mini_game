@@ -4,37 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Memory Match Game</title>
-    <link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- Mascot Soot Sprite Dễ Thương -->
-    <div class="soot-sprite-container" id="cute-mascot">
-        <div class="speech-bubble" id="mascot-speech">Ganbare! 🍀</div>
-        <svg class="soot-sprite" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-            <!-- Các gai bụi than -->
-            <path d="M 50 12 L 44 26 L 31 16 L 38 31 L 18 24 L 32 40 L 12 42 L 30 50 L 14 60 L 32 61 L 22 76 L 39 71 L 34 87 L 48 78 L 50 94 L 56 78 L 70 87 L 65 71 L 82 76 L 72 61 L 90 60 L 74 50 L 92 42 L 72 40 L 86 24 L 66 31 L 73 16 L 60 26 Z" fill="#2d2d2d" />
-            <circle cx="53" cy="51" r="28" fill="#1e1e1e" />
-            
-            <!-- Đôi mắt to tròn -->
-            <circle cx="43" cy="46" r="9.5" fill="#ffffff" />
-            <circle cx="63" cy="46" r="9.5" fill="#ffffff" />
-            
-            <!-- Con ngươi màu đen chuyển động được -->
-            <circle class="pupil-left" cx="44" cy="46" r="4.5" fill="#000000" />
-            <circle class="pupil-right" cx="62" cy="46" r="4.5" fill="#000000" />
-            
-            <!-- Má hồng đáng yêu -->
-            <ellipse cx="34" cy="56" rx="4" ry="2" fill="#f472b6" opacity="0.7" />
-            <ellipse cx="72" cy="56" rx="4" ry="2" fill="#f472b6" opacity="0.7" />
-
-            <!-- Viên kẹo sao Konpeito ôm bên hông -->
-            <g transform="translate(68, 62) scale(0.9)">
-                <polygon points="15,0 19,9 29,10 21,17 24,26 15,21 6,26 9,17 1,10 11,9" fill="#fde047" stroke="#facc15" stroke-width="1"/>
-            </g>
-        </svg>
-    </div>
-
     <div class="game-container">
         <header>
             <h1>Memory Match <span style="font-size: 1.5rem; color: var(--accent-color);">(Level <span id="current-level">1</span>)</span></h1>
@@ -46,10 +19,6 @@
                 <div class="stat-box">
                     <span class="label">Time</span>
                     <span class="value" id="time">0:00</span>
-                </div>
-                <div class="stat-box">
-                    <span class="label">Best</span>
-                    <span class="value" id="high-score">--</span>
                 </div>
             </div>
             <button id="restart-btn" class="btn">Restart Game</button>
@@ -64,7 +33,6 @@
         <div class="modal-content">
             <h2>Level Cleared! 🎉</h2>
             <p>You completed the level in <strong id="final-moves">0</strong> moves and <strong id="final-time">0:00</strong>.</p>
-            <p id="new-record-msg" style="display:none; color: var(--accent-color); font-weight: 900; margin-bottom: 1.5rem;">🏆 New High Score!</p>
             <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 1.5rem;">
                 <button id="play-again-btn" class="btn">Restart Level</button>
                 <button id="next-level-btn" class="btn primary-btn">Next Level</button>
@@ -72,6 +40,7 @@
         </div>
     </div>
 
+    <script src="memory.js"></script>
     <script src="main.js"></script>
 </body>
 </html>
