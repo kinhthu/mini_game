@@ -1,7 +1,0 @@
-{
-  "status": "Completed",
-  "summary": "Da hoan thanh toan bo 6 tasks tich hop game Co Ca Ro (Gomoku) vao web portal. Da refactor cau truc thu muc, thiet ke UI/UX lobby va game container hien dai, trien khai logic PVP/PVE (Heuristic AI), luat Viet Nam chan 2 dau. Dac biet o Task 5 da tich hop them logic Undo thong minh, Reset Score, Web Audio API sound generator va responsive scaling cuc dep cho thiet bi di dong. Tat ca 91 test cases trong test suite deu da duoc kiem thu thanh cong.",
-  "prUrl": "https://github.com/kinhthu/mini_game/pull/1",
-  "tokens": 25000,
-  "cost": 0.075
-}

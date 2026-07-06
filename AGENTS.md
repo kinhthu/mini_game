@@ -40,6 +40,7 @@ Workspace này được điều phối bởi **ProjectManager control plane**. M
 
 - Branch theo task item; commit nhỏ, **Conventional Commits** (`feat:`, `fix:`, `test:`…).
 - **Mở PR, KHÔNG merge/force-push vào nhánh chính.**
+- **Luôn kiểm tra và commit code sau khi hoàn thành**: Đảm bảo tất cả các tệp tin mới tạo hoặc chỉnh sửa đều được thêm (`git add`) và commit (`git commit`) đầy đủ trước khi kết thúc tác vụ, tránh tình trạng sót code chưa được commit lên GitHub.
 - TUYỆT ĐỐI không in/log PAT, token, secret. Không sửa file CI/secret trừ khi task yêu cầu rõ.
 
 ## Definition of Done (mỗi task item)
@@ -50,6 +51,33 @@ Workspace này được điều phối bởi **ProjectManager control plane**. M
 
 ## Memory & Custom Deployment
 
-- **Đọc Context (Bắt buộc)**: Trước khi bắt đầu thực hiện bất kỳ task nào, agent BẮT BUỘC phải đọc file `memory.md` tại thư mục gốc của dự án (nếu có) để hiểu rõ bối cảnh (context), kiến trúc và các lưu ý của dự án đó.
-- **Cập nhật Memory (Bắt buộc)**: Sau khi hoàn thành xong task, agent phải cập nhật (hoặc tạo mới nếu chưa có) file `memory.md` tại thư mục gốc của dự án để lưu lại những thông tin cập nhật mới nhất (những gì đã thay đổi, các điểm cần lưu ý tiếp theo).
+- **Đọc Context (Bắt buộc)**: Trước khi bắt đầu thực hiện bất kỳ task nào, agent BẮT BUỘC phải đọc file `memory.md` tại thư mục gốc của dự án (nếu có) để hiểu rõ bối cảnh (context), cấu trúc cơ sở dữ liệu, các API hiện có và các lưu ý đặc biệt.
+- **Cập nhật Memory (Bắt buộc)**: Sau khi hoàn thành xong task, Leader Agent phối hợp với các subagents BẮT BUỘC phải cập nhật (hoặc tạo mới) file `memory.md` tại thư mục gốc của dự án. Nội dung cập nhật phải ghi nhận chi tiết:
+  1. Cấu trúc thư mục/tệp tin mới được tạo hoặc chỉnh sửa quan trọng.
+  2. Bất kỳ thay đổi nào liên quan đến cơ sở dữ liệu (thêm bảng, thêm cột mới, quan hệ khóa ngoại...).
+  3. Các API/Service/Route mới được xây dựng và cách hoạt động của chúng.
+  4. Những bài học kinh nghiệm, lưu ý quan trọng để tối ưu hóa hiệu năng và tránh lỗi cho các task chạy sau.
 - **Custom Deployment**: Đối với các dự án có cơ chế deploy riêng (ví dụ: chạy script deploy như `deploy.ps1`), agent cần dựa vào thông tin từ mã nguồn, hướng dẫn trong `memory.md`, v.v. để thực hiện deploy một cách chính xác và phù hợp nhất.
+
+## Tránh Treo Tiến Trình & Chạy Mượt Mà (Anti-Hang & Robust Execution)
+
+- **Ngăn ngừa Lặp vô hạn**: Mọi vòng lặp logic (đặc biệt trong các tác vụ nền, xử lý hàng đợi, hoặc các bài test chạy thử) phải có cơ chế giới hạn số lần lặp tối đa cứng hoặc kiểm tra `CancellationToken` liên tục.
+- **Không sử dụng lệnh Chặn tương tác (Blocking I/O)**: Tuyệt đối KHÔNG viết mã nguồn hoặc Unit Tests chứa các lệnh chờ người dùng nhập dữ liệu từ bàn phím (như `Console.ReadLine()`, `Console.ReadKey()`, `prompt()`, `stdin.read()`).
+- **HttpClient Timeout**: Phải luôn thiết lập một `Timeout` hợp lý khi tạo hoặc sử dụng HttpClient (ví dụ: `Timeout = TimeSpan.FromSeconds(30)`).
+- **Giới hạn thời gian Test**: Khi chạy test thông qua Bash, luôn sử dụng tham số giới hạn thời gian của test runner (ví dụ: `dotnet test -- MSTest.DeploymentCleanupTimeout=60000` hoặc đặt timeout cụ thể của runner) để tránh việc một bài test bị treo làm kẹt toàn bộ tiến trình.
+- **Tự động Phục hồi khi Resume Run**: Khi Leader agent khôi phục chạy tiếp một run bị gián đoạn (`loopCount > 1`), Leader phải sử dụng thông tin danh sách task từ MCP `get_run_items_status`. Tuyệt đối không được định nghĩa lại plan hoặc gọi `update_tasks_md` ghi đè danh sách task, điều này sẽ làm reset các task đã `Done` về `Coding`.
+- **Xử lý Sự cố Truy cập Git (Git 403 / Access Denied)**: Nếu gặp lỗi quyền truy cập kho lưu trữ Git (`exit code 128`, `403 Access denied`), Leader và Coder cần kiểm tra lại token cá nhân (PAT) được lấy từ `get_project_context` và đảm bảo remote URL chứa đúng PAT.
+- **Cập nhật Tiến độ Realtime (Anti-Silent Hang)**: Để người dùng biết agent vẫn hoạt động ổn định và không bị treo ở bước kiểm thử/testing, Coder và QA phải gọi `report_progress` liên tục trước và sau các lệnh tốn thời gian (build, test, deploy).
+
+## Quy định môi trường Windows & Tránh lỗi mã hóa (Windows & Encoding Guardrails)
+
+- **Quy định mã hóa UTF-8**: Khi chạy các lệnh shell (PowerShell/CMD) trên Windows, tuyệt đối KHÔNG sử dụng toán tử chuyển hướng mặc định `>` hoặc `Out-File` không kèm tham số để xuất/ghi file log/temp. PowerShell 5.1 mặc định ghi file dạng UTF-16LE, gây lỗi `unsupported mime type text/plain; charset=utf-16le` trên Gemini API khi đọc lại file.
+  - *Giải pháp*: Sử dụng `Out-File -Encoding utf8`, hoặc chạy qua CMD `cmd /c "command > file.txt"` để lưu file dạng UTF-8/ANSI.
+- **Tránh lỗi phân giải ổ đĩa (Drive Letter Resolution)**: Khi truy cập các thư mục hệ thống hoặc file log/transcript trên Windows (đặc biệt là thư mục dưới `.gemini/antigravity-cli`), luôn sử dụng đường dẫn tuyệt đối có kèm ký tự ổ đĩa (ví dụ: `C:/Users/...` hoặc `C:\Users\...`). Tránh dùng đường dẫn bắt đầu bằng dấu gạch chéo không có ổ đĩa như `/Users/...`, vì Go/CLI sẽ phân giải nhầm sang ổ đĩa hiện hành của workspace (ví dụ: ổ `D:`), gây lỗi không tìm thấy tệp tin (`path not found`).
+- **Tránh lỗi treo khi tự viết Script gọi MCP (urllib SSE Buffering)**: Khi Agent tự viết mã nguồn Python để tương tác trực tiếp với API của MCP Server (ví dụ: thông qua tệp `call_mcp.py` hoặc `set_qa_result.py`), hãy đọc dữ liệu phản hồi (JSON-RPC response) trực tiếp từ **HTTP POST response body** thay vì cố gắng lắng nghe qua kết nối stream SSE. Thư viện `urllib.request` của Python có cơ chế tự động đệm (buffer) dữ liệu luồng SSE, dẫn đến việc tiến trình bị treo vô hạn (timeout waiting for response) vì không nhận được đầy đủ dữ liệu thời gian thực.
+- **Tuyệt đối KHÔNG đợi người dùng (No Interactive Waiting)**: Vì hệ thống chạy ngầm tự động (non-interactive background process), các Agent tuyệt đối KHÔNG được đưa ra các câu hỏi/lựa chọn (như Option A, B, C) rồi dừng lại đợi người dùng nhập liệu. Nếu nhiệm vụ là phân tích/review hoặc không cần sửa code (0 task items), Leader Agent phải ghi nhận kết quả và gọi `report_run_complete` ngay lập tức để kết thúc lượt chạy thành công với status='Completed'.
+- **Giới hạn phạm vi theo dự án được giao (Strict Project Scope Boundary)**: Agent chỉ được phép đọc, ghi, tìm kiếm, liệt kê và thực thi các lệnh trong phạm vi thư mục của dự án hiện hành được giao (workspace hiện tại của lượt chạy). Tuyệt đối KHÔNG quét, liệt kê (listdir), đọc file, chạy script hoặc thực thi bất kỳ thao tác nào tương tác với các thư mục dự án khác bên ngoài thư mục dự án hiện tại, trừ khi yêu cầu của người dùng chỉ định rõ ràng việc tích hợp liên dự án.
+
+
+
+
