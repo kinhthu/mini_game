@@ -1,25 +1,8 @@
-# Tasks Breakdown - Caro Game Integration
+# Tasks Breakdown - Neo-Cyberpunk Multi-Game Hub
 
-- [x] Task 1: Refactor File Structure & Setup Lobby
-  - Move current `main.js` logic to `js/memory.js`.
-  - Create `js/app.js` as the main navigation coordinator.
-  - Modify `index.html` and `style.css` to introduce the game portal/lobby with a premium Glassmorphism look.
-- [x] Task 2: UI/UX Design & Basic Caro Logic (PvP)
-  - Create 15x15 board markup and controls in `index.html`.
-  - Write Caro board styles, X/O styles, hover previews, and animations in `style.css`.
-  - Write `js/caro.js` to initialize board state, toggle turns, and handle clicks for Player-vs-Player (PvP).
-- [x] Task 3: Win Checker Algorithm & Vietnamese Rule Filter
-  - Implement a 4-direction checking algorithm.
-  - Implement standard Gomoku win and Vietnamese rule filtering (cannot win if blocked at both ends).
-  - Highlight the winning 5-in-a-row pattern with pulse/glowing animations.
-- [x] Task 4: Heuristic AI Engine for PvE
-  - Develop `js/caro-ai.js` containing the heuristic scoring algorithm (attack/defend weights).
-  - Integrate AI opponent moves with simulated delays into `js/caro.js`.
-- [x] Task 5: Game Feature Extensions & UX Polishing
-  - Support **Undo** functionality (backs up 1 move for PvP, 2 moves for PvE).
-  - Add scoreboard, local score tracking, and Reset Score option.
-  - Implement responsive scaling or board scroll/zoom for mobile screens.
-  - Add sound effects for clicks/win, and visual modal celebration.
-- [x] Task 6: Final Verification & QA Testing
-  - Validate all 8 test scenarios defined in the plan.
-  - Complete the run and prepare report.
+- [x] Task 1: Reconstruct project directory structure. Define universal Neo-Cyberpunk Glassmorphism theme and base utility styles in `css/style.css`.
+- [x] Task 2: Implement dynamic Lobby / Dashboard view and profile manager in `index.html` and `js/main.js` (including navigation and local storage player profiles).
+- [x] Task 3: Refactor and implement "Find Match" (Memory Card Game) inside `js/games/match.js` with grid options (4x4, 6x6, 8x8), 3D flip animations, and statistics.
+- [x] Task 4: Implement "2048" game inside `js/games/g2048.js` with matrix-sliding, mobile swipe / keyboard input, undo buffer (3 moves), and state preservation.
+- [x] Task 5: Implement "Cá» Ca RÃ´" (Gomoku 15x15) inside `js/games/caro.js` with PvP/PvE modes, turn log, undo history, first-move switch, and heuristic AI.
+- [x] Task 6: Final project verification, responsive styling tweaks, E2E playability validation, and QA completion.

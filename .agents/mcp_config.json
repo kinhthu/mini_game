@@ -1,9 +1,9 @@
 {
   "mcpServers": {
     "projectManager": {
-      "url": "http://localhost:5049/mcp",
+      "url": "https://forge.sigotech.vn/mcp",
       "headers": {
-        "Authorization": "Bearer 8b41d864398a7b33bb0589804424411c15f71edd6902c348711eb306a15f5b64:a6f2cbf5-e946-44d0-acd5-005b2a954e57"
+        "Authorization": "Bearer de8e17ced6dcb03de6200daef636e4d5408ac93a60b1c907d03b0ae2d833037a:ef316b9e-f529-4401-97ac-a8003da51c8b"
       }
     }
   }
