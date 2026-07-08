@@ -26,6 +26,7 @@ Workspace này được điều phối bởi **ProjectManager control plane**. M
 | `report_review_result` | Reviewer — verdict `APPROVED` \| `REVISION_NEEDED` + notes |
 | `report_qa_result` | QA — verdict `PASS` \| `FAIL` + notes |
 | `report_retrospective` | Leader — phân tích retrospective chứa wentWell, wentWrong, promptSuggestions, lessonsLearned |
+| `request_clarification` | Leader — dừng/tạm dừng run và hỏi ý kiến user khi mô tả task quá mơ hồ |
 | `report_run_complete` | Leader cuối run — status + prUrl + summary + tokens + cost + retrospective |
 
 
@@ -54,11 +55,51 @@ Workspace này được điều phối bởi **ProjectManager control plane**. M
 ## Memory & Custom Deployment
 
 - **Đọc Context (Bắt buộc)**: Trước khi bắt đầu thực hiện bất kỳ task nào, agent BẮT BUỘC phải đọc file `memory.md` tại thư mục gốc của dự án (nếu có) để hiểu rõ bối cảnh (context), cấu trúc cơ sở dữ liệu, các API hiện có và các lưu ý đặc biệt.
-- **Cập nhật Memory (Bắt buộc)**: Sau khi hoàn thành xong task, Leader Agent phối hợp với các subagents BẮT BUỘC phải cập nhật (hoặc tạo mới) file `memory.md` tại thư mục gốc của dự án. Nội dung cập nhật phải ghi nhận chi tiết:
-  1. Cấu trúc thư mục/tệp tin mới được tạo hoặc chỉnh sửa quan trọng.
-  2. Bất kỳ thay đổi nào liên quan đến cơ sở dữ liệu (thêm bảng, thêm cột mới, quan hệ khóa ngoại...).
-  3. Các API/Service/Route mới được xây dựng và cách hoạt động của chúng.
-  4. Những bài học kinh nghiệm, lưu ý quan trọng để tối ưu hóa hiệu năng và tránh lỗi cho các task chạy sau.
+- **Cập nhật Memory (Bắt buộc)**: Sau khi hoàn thành xong task, Leader Agent phối hợp với các subagents BẮT BUỘC phải cập nhật (hoặc tạo mới) file `memory.md` tại thư mục gốc của dự án. Nội dung cập nhật phải tuân theo cấu trúc chuẩn:
+
+### memory.md Schema Chuẩn (Bắt buộc tuân theo)
+
+```markdown
+# memory.md
+
+## [META] Last Updated
+- Run ID: {runId} | Date: {date} | Leader: {model}
+
+## [TECH] Tech Stack
+- Language: {ngôn ngữ chính} | Framework: {framework} | DB: {database} | Test: {test framework}
+- Build: {lệnh build} | Test: {lệnh test} | Lint: {lệnh lint}
+- Key libs: {các thư viện quan trọng}
+
+> Ví dụ: Node.js | Express | PostgreSQL | Jest | `npm run build` | `npm test`
+> Ví dụ: Python 3.11 | FastAPI | MongoDB | pytest | `python -m build` | `pytest`
+> Ví dụ: C# | ASP.NET Core 9 | SQL Server | xUnit | `dotnet build` | `dotnet test`
+
+## [ARCH] Key Architecture Decisions
+(Tối đa 10 bullet, chỉ các quyết định quan trọng nhất)
+- Pattern 1...
+- Pattern 2...
+
+## [FILES] Key Files Map
+| File | Purpose |
+|---|---|
+| `path/to/main_file` | Mô tả vai trò |
+| (chỉ ghi file quan trọng nhất, không liệt kê tất cả) |
+
+## [DB] Recent Schema Changes
+(Chỉ thay đổi từ 5 runs gần nhất, format: `TableName: added/modified ColumnName (Type)`)
+
+## [API] API/Service Contracts
+(Các endpoint/API mới hoặc thay đổi)
+
+## [GOTCHAS] Known Pitfalls & Lessons
+(Xếp theo mức độ quan trọng, format: **[SEVERITY]** Description)
+- **[CRITICAL]** ...
+- **[HIGH]** ...
+
+## [PERF] Performance Notes
+(Chỉ khi có vấn đề performance thực sự đã gặp)
+```
+
 - **Custom Deployment**: Đối với các dự án có cơ chế deploy riêng (ví dụ: chạy script deploy như `deploy.ps1`), agent cần dựa vào thông tin từ mã nguồn, hướng dẫn trong `memory.md`, v.v. để thực hiện deploy một cách chính xác và phù hợp nhất.
 
 ## Tránh Treo Tiến Trình & Chạy Mượt Mà (Anti-Hang & Robust Execution)
