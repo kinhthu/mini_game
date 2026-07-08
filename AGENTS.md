@@ -20,12 +20,14 @@ Workspace này được điều phối bởi **ProjectManager control plane**. M
 | Tool | Khi gọi |
 |---|---|
 | `get_assigned_task`, `get_project_context` | Đầu run, lấy task & context |
-| `update_tasks_md` | Leader sau khi chia task |
+| `update_tasks_md` | Leader sau khi chia task (hỗ trợ `DependsOn` chứa mảng ID của các task phụ thuộc) |
 | `report_progress` | Mỗi khi chuyển bước / có cập nhật đáng kể (kèm tokens/cost nếu biết) |
 | `mark_task_item` | Đổi trạng thái item: pending/coding/review/qa/done/failed |
 | `report_review_result` | Reviewer — verdict `APPROVED` \| `REVISION_NEEDED` + notes |
 | `report_qa_result` | QA — verdict `PASS` \| `FAIL` + notes |
-| `report_run_complete` | Leader cuối run — status + prUrl + summary + tokens + cost |
+| `report_retrospective` | Leader — phân tích retrospective chứa wentWell, wentWrong, promptSuggestions, lessonsLearned |
+| `report_run_complete` | Leader cuối run — status + prUrl + summary + tokens + cost + retrospective |
+
 
 **Control signal**: verdict phải gửi **qua MCP tool dạng cấu trúc**, KHÔNG để Worker parse văn bản tự do.
 

@@ -1,8 +1,9 @@
-# Tasks Breakdown - Neo-Cyberpunk Multi-Game Hub
+# Task List - Tic Tac Toe Game Integration
 
-- [x] Task 1: Reconstruct project directory structure. Define universal Neo-Cyberpunk Glassmorphism theme and base utility styles in `css/style.css`.
-- [x] Task 2: Implement dynamic Lobby / Dashboard view and profile manager in `index.html` and `js/main.js` (including navigation and local storage player profiles).
-- [x] Task 3: Refactor and implement "Find Match" (Memory Card Game) inside `js/games/match.js` with grid options (4x4, 6x6, 8x8), 3D flip animations, and statistics.
-- [x] Task 4: Implement "2048" game inside `js/games/g2048.js` with matrix-sliding, mobile swipe / keyboard input, undo buffer (3 moves), and state preservation.
-- [x] Task 5: Implement "Cá» Ca RÃ´" (Gomoku 15x15) inside `js/games/caro.js` with PvP/PvE modes, turn log, undo history, first-move switch, and heuristic AI.
-- [x] Task 6: Final project verification, responsive styling tweaks, E2E playability validation, and QA completion.
+| Seq | Title | Status | Description |
+| --- | ----- | ------ | ----------- |
+| 1 | Lobby / Home Screen Implementation | Pending | Design a clean, glassmorphic central lobby displaying cards for Memory Match and Tic Tac Toe with local storage stats. |
+| 2 | SPA View Toggling Integration | Pending | Update HTML structure and main JS to support SPA view switching between the lobby, memory match, and tic tac toe. |
+| 3 | Tic Tac Toe UI Construction | Pending | Build the Tic Tac Toe board CSS/HTML layout, mode selectors (PvP/PvE), AI selectors (Easy/Unbeatable), and game status display. |
+| 4 | Tic Tac Toe Game Logic & Minimax AI Engine | Pending | Implement the game state machine, move undo stack, local PvP play, random-moves AI (Easy), and minimax algorithm AI (Unbeatable). |
+| 5 | Final Project Integration & Verification | Pending | Test E2E interactions, verify state tracking in localStorage, validate responsiveness, and ensure no regressions. |
