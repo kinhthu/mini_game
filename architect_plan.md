@@ -1,186 +1,191 @@
-# Kế Hoạch Kỹ Thuật: Tích Hợp Game Tic Tac Toe Vào Danh Sách Game
+# Kế Hoạch Kỹ Thuật: Tích Hợp Game Cờ Caro (Gomoku 15x15) Vào Danh Sách Game
 
-Tài liệu này định nghĩa kế hoạch thiết kế kiến trúc, các thay đổi giao diện và đặc tả kỹ thuật chi tiết để tích hợp trò chơi **Tic Tac Toe** (Cờ Ca-rô 3x3) vào bộ ứng dụng game **Mini Game Hub**. 
+Tài liệu này định nghĩa kế hoạch thiết kế kiến trúc, các thay đổi giao diện và đặc tả kỹ thuật chi tiết để tích hợp trò chơi **Cờ Caro** (Gomoku 15x15) vào bộ ứng dụng game **Mini Game Hub**. 
 
-Ứng dụng sẽ được tái cấu trúc từ một trang game duy nhất (Memory Match) thành một ứng dụng Single Page Application (SPA) chứa nhiều game, quản lý bởi một màn hình chính (Lobby) điều hướng mượt mà, sử dụng thiết kế kính mờ (Glassmorphism) cùng hiệu ứng Neon bắt mắt.
+Trò chơi mới sẽ được tích hợp vào kiến trúc Single Page Application (SPA) hiện có, đứng song song với hai game đã hoàn thiện là **Memory Match** và **Tic Tac Toe**.
 
 ---
 
 ## 1. Kiến Trúc Hệ Thống & Cấu Trúc Thư Mục
 
-Dự án sử dụng kiến trúc client-side SPA thuần (không framework). Các tệp tin trong workspace sẽ được cập nhật hoặc tạo mới như sau:
+Dự án tiếp tục sử dụng kiến trúc client-side SPA thuần (không framework). Các tệp tin trong workspace sẽ được cập nhật hoặc tạo mới như sau:
 
 ```text
-wt-b73fa0b253eb4fa588781164e1c702f2/
-├── index.html                   # Cấu trúc HTML chính (Lobby, Memory Match & Tic Tac Toe views)
-├── style.css                    # Toàn bộ CSS (Lobby, game cards, 3x3 grid board & neon styles)
-├── main.js                      # Central Controller: Điều hướng view, ProfileManager, quản lý stats
-└── tictactoe.js                 # NEW FILE: Công cụ xử lý logic game Tic Tac Toe, Minimax AI & Easy AI
+D:\workspace\Mini-Games/
+├── index.html                   # Cấu trúc HTML chính (Lobby, Memory Match, Tic Tac Toe & Caro views)
+├── style.css                    # Toàn bộ CSS (Bổ sung giao diện bàn cờ 15x15, star points & neon purple style)
+├── main.js                      # Central Controller: Bổ dung điều hướng view & đồng bộ stats cho Caro
+├── caro.js                      # NEW FILE: Xử lý logic game Caro, Heuristic AI đối thủ & Undo Logic
+└── test_caro_logic.js           # NEW FILE: Bài kiểm thử tự động (Unit test) độc lập cho Caro dưới Node.js
 ```
 
 ---
 
-## 2. Thiết Kế Giao Diện & Hệ Thống Màu Sắc (Neon Theme)
+## 2. Thiết Kế Giao Diện & Hệ Thống Màu Sắc (Neon Purple Theme)
 
-Tic Tac Toe sẽ sử dụng hệ màu **Neon Gold / Cyberpunk** làm màu chủ đạo để phân biệt với các game khác, đồng bộ với phong cách Glassmorphism:
+Cờ Caro sẽ sử dụng hệ màu **Neon Purple / Violet** (`--accent-purple: #a55eea`) làm tông màu chủ đạo để phân biệt với Tic Tac Toe (Neon Gold) và Memory Match (Neon Green/Blue):
 
 | Token Màu | Giá Trị | Vai Trò Giao Diện |
 |---|---|---|
-| `--accent-gold` | `#fbc531` | Màu chủ đạo của Tic Tac Toe, viền nổi bật, tiêu đề |
+| `--accent-purple` | `#a55eea` | Màu chính của Cờ Caro, viền phát sáng, các nút điều khiển |
 | `--accent-cyan` | `#00d2d3` | Màu hiển thị cho quân cờ X (Neon Cyan) |
 | `--accent-coral` | `#ff7675` | Màu hiển thị cho quân cờ O (Neon Coral) |
-| `--glass-bg` | `rgba(255, 255, 255, 0.05)` | Nền thẻ kính mờ |
-| `--glass-border` | `rgba(255, 255, 255, 0.1)` | Viền kính mờ |
+| `--shadow-purple-glow`| `0 0 15px rgba(165, 94, 234, 0.4)` | Hiệu ứng neon mờ trên card và ô cờ |
 
-### Chi Tiết Thành Phần
-1. **Lobby Game Card**: Thẻ game trong giao diện Lobby có hiệu ứng phóng to nhẹ khi hover, viền vàng neon và hiển thị chỉ số thắng/thua/hòa (PvP và PvE) lấy từ `localStorage`.
-2. **Tic Tac Toe Board**: Bảng lưới 3x3 kích thước cố định khoảng `300px - 320px`, các ô cờ bo góc nhẹ (`0.75rem`) có hiệu ứng hover hiển thị mờ ký tự chuẩn bị đặt.
-3. **Hiệu ứng chiến thắng**: Khi có người thắng, 3 ô tạo thành đường thắng sẽ nhấp nháy liên tục (pulse animation) bằng màu vàng neon nổi bật.
+### Đặc tả Giao diện Bàn cờ Caro
+1. **Lobby Game Card**: Bổ dung một thẻ game thứ 3 có class `.game-card.caro-theme` trong giao diện Lobby:
+   - Hiển thị Icon: `⚔️` hoặc `🏁`.
+   - Tiêu đề: **Cờ Caro**.
+   - Mô tả: "Trải nghiệm cờ Caro 15x15 truyền thống. Đấu với bạn bè hoặc thử thách AI thông minh."
+   - Thống kê: Số trận thắng (`stats-caro-wins`) và Hòa (`stats-caro-draws`) lưu trữ trong `localStorage`.
+   - Nút kích hoạt: `Play Now` kích hoạt view `#caro-view`.
+2. **Caro Board Grid (15x15)**: 
+   - Lưới chơi gồm 225 ô cờ `.caro-cell` sắp xếp bằng CSS Grid `repeat(15, 1fr)`.
+   - Bàn cờ có kích thước linh hoạt (responsive) để hiển thị đầy đủ trên màn hình di động mà không bị tràn (max-width `95vw` hoặc `min(550px, 95vw)`).
+   - Ký tự quân cờ X/O có hiệu ứng neon tương tự Tic Tac Toe.
+   - Các điểm nhấn sao (Star Points) truyền thống tại các tọa độ Gomoku: `(3,3), (3,11), (7,7), (11,3), (11,11)`.
+3. **Hiệu ứng chiến thắng**: Khi đạt được chuỗi 5 quân cờ thẳng hàng, các ô cờ tạo nên đường thắng sẽ kích hoạt hiệu ứng nhấp nháy `.winning-cell` màu tím neon.
 
 ---
 
 ## 3. Đặc Tả Kỹ Thuật Chi Tiết Từng File
 
 ### A. index.html
-1. **Lobby View (`#lobby-view`)**: 
-   - Tiêu đề game hub dạng neon phát sáng.
-   - Panel Profile: Hiển thị Avatar, Nickname (có nút Edit sửa trực tiếp lưu vào `localStorage`) và Rank của người chơi.
-   - Panel Stats: Hiển thị tổng số trận đã chơi, tỷ lệ thắng (Win Rate) toàn cục.
-   - Games Grid: Chứa 2 thẻ card lựa chọn game: **Memory Match** và **Tic Tac Toe**. Mỗi card có mô tả ngắn, thống kê lịch sử và nút "Play Now".
-2. **Memory Match View (`#memory-match-view`)**:
-   - Được bao bọc trong một container ẩn (`.hidden`), có nút quay lại Lobby (`← Back to Lobby`).
-3. **Tic Tac Toe View (`#tictactoe-view`)**:
-   - Bao bọc trong container ẩn (`.hidden`), có nút quay lại Lobby.
-   - Panel cấu hình game:
+1. **Lobby View (`#lobby-view`)**:
+   - Thêm thẻ game card thứ ba `.game-card.caro-theme` vào `.games-grid` với cấu trúc hiển thị điểm số và nút bấm khởi tạo chơi cờ Caro (`#play-caro-btn`).
+2. **Caro View (`#caro-view`)**:
+   - Thêm section chứa toàn bộ giao diện chơi cờ Caro với ID `#caro-view`, mặc định có class `hidden`.
+   - Nút quay lại Lobby (`← Back to Lobby`) sử dụng class chung `.back-to-lobby-btn`.
+   - **Bảng Cấu Hình (Configuration)**:
      - Chọn chế độ chơi: PvP (Local) vs PvE (Đấu với AI).
-     - Chọn độ khó AI (chỉ hiện khi đấu PvE): Dễ (Easy) vs Vô địch (Unbeatable).
-   - Bảng thống kê tỉ số trận đấu hiện tại (Player X Wins, Draws, Player O Wins).
-   - Trạng thái lượt chơi hiện tại ("Player X's Turn", "Your Turn", hoặc "AI is thinking...").
-   - Lưới chơi cờ `#ttt-board` chứa 9 ô `.ttt-cell` có `data-index` từ 0 đến 8.
-   - Thanh điều khiển bên dưới: Nút hoàn tác (Undo), Nút chơi lại trận mới (Restart Match), Nút xóa tỉ số hiện tại (Clear Score).
-4. **Script Imports**:
-   - Nhúng `main.js` ở cuối body.
-   - Nhúng `tictactoe.js` ở cuối body để chạy song song.
+     - Chọn độ khó AI (chỉ hiện khi chơi PvE): Dễ (Easy - đi ngẫu nhiên) vs Khó (Hard - AI Heuristic thông minh).
+   - **Bảng Điểm (Scoreboard)**:
+     - Thống kê tỉ số trận hiện tại (Player X Wins, Draws, Player O Wins).
+   - **Thanh Trạng Thái Lượt Đi**:
+     - Hiển thị lượt đi hiện tại hoặc thông báo kết quả chung cuộc.
+   - **Bàn Cờ Lưới**:
+     - `<main class="caro-grid" id="caro-board">` - các ô cờ `.caro-cell` sẽ được khởi tạo hoàn toàn động từ Javascript.
+   - **Thanh Điều Khiển Bên Dưới**:
+     - Nút hoàn tác: `↩ Undo` (`#caro-undo-btn`).
+     - Nút chơi lại: `🔄 Restart Match` (`#caro-restart-btn`).
+     - Nút reset điểm số: `🗑️ Clear Score` (`#caro-clear-btn`).
+3. **Script Imports**:
+   - Khai báo thêm `<script src="caro.js"></script>` ở cuối body (sau `tictactoe.js`).
 
 ### B. style.css
-1. **Lobby & Layout**:
-   - Thiết lập CSS Grid cho danh sách game (`.games-grid`).
-   - Cài đặt hiệu ứng kính mờ `.glass-card` (backdrop-filter, border bán trong suốt).
-2. **Lưới Tic Tac Toe**:
-   - `.ttt-grid`: CSS Grid `repeat(3, 1fr)` có khoảng cách gap là `10px` đến `15px`.
-   - `.ttt-cell`: Ô cờ kính mờ, có kích thước cố định hoặc responsive, căn giữa nội dung X/O bằng Flexbox, kích thước font chữ lớn (`3rem`).
-3. **Ký Tự Quân Cờ**:
-   - Quân X: Có class `.x`, màu Neon Cyan kèm hiệu ứng shadow phát sáng (`text-shadow`).
-   - Quân O: Có class `.o`, màu Neon Coral kèm hiệu ứng shadow phát sáng.
+1. **Thẻ Game Lobby**:
+   - Cấu hình màu sắc, gradient nền và hiệu ứng hover cho `.caro-theme` sử dụng màu chủ đạo `--accent-purple`.
+2. **Bàn Cờ 15x15**:
+   - `.caro-grid`: Sử dụng CSS Grid `repeat(15, 1fr)`. Tỷ lệ ô cờ luôn duy trì tỷ lệ 1:1 bằng `aspect-ratio: 1`.
+   - `.caro-cell`: Đường viền bán trong suốt (`rgba(255, 255, 255, 0.08)`), nền kính mờ. Kích thước font chữ co giãn tự động để vừa vặn ô cờ.
+   - `.star-point`: Đặt một chấm tròn nhỏ ở tâm ô cờ (sử dụng pseudo-element `::before`) để đánh dấu các điểm sao Gomoku.
+3. **Hiệu ứng Hover Quân Cờ**:
+   - Khi di chuột qua một ô cờ trống, hiển thị mờ ký tự chuẩn bị đặt (quân X hoặc O tương ứng lượt hiện tại) bằng cách gán CSS Variable `--hover-symbol` và `--hover-color` lên bàn cờ cha `#caro-board`.
 4. **Animation chiến thắng**:
-   - `.ttt-cell.winning`: Kích hoạt keyframe animation `pulse` làm đổi màu nền sang màu vàng neon sáng rực và co giãn nhẹ.
+   - Cài đặt keyframe `.caro-cell.winning` nhấp nháy chuyển màu nền tím phát sáng.
 
 ### C. main.js
-1. **Lớp Điều Hướng & Lobby**:
-   - Định nghĩa đối tượng `GameHub` điều phối chuyển đổi giữa các màn hình (`showView(viewId)`).
-   - Quản lý sự kiện nút back về lobby từ các màn chơi.
-2. **Profile & Stats Manager**:
-   - Quản lý tải và lưu trữ thông tin hồ sơ người chơi (`nickname`, `rank`).
-   - Cập nhật số liệu thống kê thắng/thua toàn hệ thống và đồng bộ trực tiếp lên giao diện Lobby mỗi khi tải lại trang hoặc kết thúc game.
-3. **Tách Biệt Logic Memory Match**:
-   - Đảm bảo logic Memory Match (hiện tại đang nằm trong `main.js`) hoạt động độc lập dưới dạng một module hoặc phương thức khởi tạo riêng khi view `memory-match-view` được kích hoạt.
+1. **Quản Lý Profile & Thống Kê**:
+   - Mở rộng hàm `ProfileManager.updateUI()` để đọc và cập nhật các biến stats cho Caro từ `localStorage`:
+     - `caro_pve_wins`, `caro_pve_played`, `caro_pve_draws`
+     - `caro_pvp_wins`, `caro_pvp_played`, `caro_pvp_draws`
+   - Tính toán tổng số trận thắng của Caro vào biến `totalWins` toàn hệ thống để cập nhật Rank của người chơi.
+2. **Sự Kiện Điều Hướng**:
+   - Thêm bộ lắng nghe sự kiện click cho `#play-caro-btn`. Khi nhấn, chuyển sang view `#caro-view` và gọi hàm `CaroGame.init()`.
+   - Đảm bảo khi nhấn nút quay lại Lobby (`.back-to-lobby-btn`), dọn dẹp các timer AI dở dang của Caro (nếu có).
 
-### D. tictactoe.js (Tệp Tin Mới)
-Một module tự thực thi (IIFE) hoặc class controller quản lý toàn bộ logic Tic Tac Toe:
-1. **State variables**:
-   - `board`: Mảng 1 chiều 9 phần tử lưu trạng thái các ô (`null`, `'X'`, `'O'`).
-   - `currentPlayer`: Người chơi hiện tại (`'X'` hoặc `'O'`).
-   - `gameMode`: `'pvp'` (Local) hoặc `'pve'` (AI).
-   - `aiDifficulty`: `'easy'` hoặc `'hard'`.
-   - `history`: Ngăn xếp (stack) lưu các trạng thái board trước đó để phục vụ Undo.
-   - `isGameOver`, `isAiMoving`.
-2. **Hàm Điều Khiển & Sự Kiện**:
-   - `init()`: Gán sự kiện click cho các ô cờ, nút đổi chế độ, độ khó, nút undo, restart, clear.
-   - `resetBoard()`: Thiết lập lại mảng board, lượt chơi về 'X', làm sạch history và cập nhật giao diện.
-   - `handleCellClick(e)`: Xử lý khi người chơi bấm vào ô cờ trống. Chặn click nếu game đã kết thúc hoặc AI đang tính toán.
-   - `makeMove(index, player)`: Ghi nhận nước đi, lưu trạng thái hiện tại vào `history`, đổi lượt chơi và kiểm tra trạng thái thắng/draw.
-   - `endGame(result, winCombo)`: Dừng game, tô màu nổi bật các ô thắng cuộc, lưu tỉ số vào `localStorage` và cập nhật giao diện thống kê.
-3. **Thuật Toán AI (Easy & Minimax)**:
-   - `triggerAiMove()`: Thực hiện nước đi của AI bằng cách gọi thuật toán tương ứng sau một khoảng trễ giả lập `500ms` (tạo cảm giác tự nhiên).
-   - `getRandomMove()`: Trả về một chỉ số ngẫu nhiên trong danh sách các ô trống.
-   - `getMinimaxMove()`: Tìm nước đi có điểm tối ưu nhất bằng cách chạy thuật toán Minimax duyệt qua các nước đi khả dụng của quân 'O'.
-   - `checkWin(b, player)`: Kiểm tra xem player có thắng trên bảng trạng thái `b` hay không. Trả về mảng 3 chỉ số thắng cuộc nếu có, ngược lại trả về `null`.
-   - `checkWinForScore(b, player)`: Hàm phụ trợ kiểm tra nhanh thắng/thua phục vụ đệ quy của Minimax.
-   - `minimax(b, depth, isMaximizing)`: Thuật toán Minimax đệ quy có tính độ sâu (depth-aware):
-     - Trạng thái AI thắng: `10 - depth` (ưu tiên thắng nhanh).
-     - Trạng thái người chơi thắng: `depth - 10` (ưu tiên cản phá sớm).
-     - Trạng thái hòa: `0`.
-4. **Hàm Hoàn Tác (Undo)**:
-   - Ở chế độ **PvP**: Lùi lại 1 nước đi từ history.
-   - Ở chế độ **PvE**: Lùi lại 2 nước đi (cả nước đi của AI và nước đi của Player trước đó) để đưa lượt đi về tay người chơi.
+### D. caro.js (Tệp Tin Mới)
+Chứa đối tượng quản lý toàn cục `CaroGame` đóng gói toàn bộ trạng thái và thuật toán xử lý:
+1. **Quản Lý Trạng Thế (State Variables)**:
+   - `board`: Mảng 2 chiều kích thước 15x15 khởi tạo bằng `null`.
+   - `currentPlayer`: `'X'` hoặc `'O'`.
+   - `playMode`: Chế độ đấu `'pvp'` hoặc `'pve'`.
+   - `aiDifficulty`: Chế độ thông minh `'easy'` hoặc `'hard'`.
+   - `history`: Stack chứa tọa độ các nước đi trước đó (`[{r, c, player}, ...]`) phục vụ chức năng Undo.
+   - `isGameOver`, `isAiMoving`, `aiTimeout`.
+2. **Khởi Tạo Giao Diện & Sự Kiện**:
+   - `init()`: Thực hiện liên kết DOM (chế độ chơi, độ khó, các nút điều khiển) và gọi hàm tạo bàn cờ. Đảm bảo hàm này chỉ đăng ký bộ lắng nghe sự kiện một lần (`initialized` flag).
+   - `reset()`: Khôi phục bàn cờ về trống, dọn sạch stack `history`, dừng timeout AI, đặt lại lượt đi về `'X'`.
+   - `generateBoard()`: Tạo động 225 phần tử `div` có thuộc tính `data-row` và `data-col`. Nếu ô thuộc tọa độ sao, gán thêm class `star-point`. Đăng ký sự kiện click cho từng ô cờ.
+3. **Cơ Chế Đặt Quân (placeStone)**:
+   - Ghi nhận nước đi vào mảng `board[r][c]`.
+   - Tạo hiệu ứng rơi quân cờ bằng cách thêm phần tử con `.stone-drop` chứa X hoặc O.
+   - Lưu trữ nước đi vào stack `history`.
+4. **Kiểm Tra Thắng Thua (checkWin & checkDraw)**:
+   - `checkWin(row, col)`: Quét từ vị trí quân vừa đi theo 4 trục chính (Ngang, Dọc, Chéo xuôi `\`, Chéo ngược `/`).
+   - Đếm số lượng quân cùng màu liên tiếp. Nếu đạt đủ từ 5 quân cờ liên tiếp trở lên, trả về đối tượng `{ symbol: currentPlayer, stones: [[r,c], ...] }`.
+   - Nếu bàn cờ đầy mà không ai thắng, trả về trạng thái hòa.
+5. **Thuật Toán AI Phân Tích Thế Trận (Heuristic AI)**:
+   - Đối với bàn cờ 15x15, thuật toán đệ quy Minimax không khả thi vì không gian trạng thái quá lớn. Sử dụng thuật toán **Heuristic Evaluation** để tìm nước đi tối ưu:
+   - **Tính Toán Nước Đi (calculateAiMove)**:
+     - Nếu AI đi đầu tiên (bàn cờ trống), tự động chọn ô trung tâm `(7, 7)` để chiếm thế thượng phong.
+     - Với các trường hợp khác, quét tất cả các ô cờ trống trên bàn cờ.
+     - Với mỗi ô trống `(r, c)`, tính toán điểm tấn công (`attackScore`) dựa trên số lượng quân cờ của AI xung quanh và điểm phòng thủ (`defenseScore`) dựa trên số lượng quân cờ của đối thủ.
+     - Công thức gộp điểm: `totalScore = attackScore * 1.1 + defenseScore` (ưu tiên tấn công giành chiến thắng hơn là phòng thủ thụ động nếu điểm ngang nhau).
+     - Trả về tọa độ ô cờ có điểm số cao nhất.
+   - **Hàm Đánh Giá Điểm Heuristic**:
+     - Với mỗi ô cờ trống, quét theo 4 hướng. Đếm số quân liên tiếp cùng màu và trạng thái bị chặn ở hai đầu (mở cả 2 đầu, bị chặn 1 đầu, bị chặn cả 2 đầu).
+     - Gán trọng số điểm số:
+       - Chuỗi 5 quân liên tiếp (Chiến thắng): `100,000` điểm.
+       - Chuỗi 4 quân mở hai đầu (Nguy hiểm cực độ): `10,000` điểm.
+       - Chuỗi 4 quân bị chặn một đầu / Chuỗi 3 quân mở hai đầu: `1,000` điểm.
+       - Chuỗi 3 quân bị chặn một đầu / Chuỗi 2 quân mở hai đầu: `100` điểm.
+       - Chuỗi đơn lẻ hoặc bị chặn hai đầu: `0` đến `10` điểm.
+6. **Hoàn Tác Nước Đi (Undo)**:
+   - Ở chế độ PvP: Rút lại chính xác 1 nước đi vừa đi trong history.
+   - Ở chế độ PvE: Rút lại đồng thời 2 nước đi (nước đi của AI và nước đi của Player trước đó) để người chơi tiếp tục chơi tiếp.
 
 ---
 
 ## 4. Kế Hoạch Triển Khai Chi Tiết (Checklist)
 
-### Phase 1: Tạo Giao Diện Lobby & Cấu Trúc HTML
-- [ ] 1.1. Sửa đổi `index.html` để bọc Memory Match hiện tại vào màn hình `#memory-match-view` và thêm class `.hidden`.
-- [ ] 1.2. Thêm màn hình chính `#lobby-view` chứa Panel Profile, thống kê chung và Games Grid với 2 thẻ game.
-- [ ] 1.3. Thêm cấu trúc màn hình chơi game Tic Tac Toe `#tictactoe-view` đầy đủ các nút chọn mode, bảng điểm, lưới 9 ô cờ và thanh điều khiển undo/restart.
-- [ ] 1.4. Khai báo import tệp `tictactoe.js` ở cuối `index.html`.
+### Phase 1: Xây Dựng Khung Giao Diện HTML
+- [ ] 1.1. Sửa đổi `index.html`, bổ sung thẻ card giới thiệu game Cờ Caro vào games grid của Lobby.
+- [ ] 1.2. Thêm view `#caro-view` chứa cấu hình chọn chế độ PvP/PvE, độ khó AI, scoreboard, bàn cờ `#caro-board` và thanh điều khiển undo/restart/clear.
+- [ ] 1.3. Khai báo import tệp `caro.js` ở cuối `index.html`.
 
-### Phase 2: Phát Triển CSS & Theme Neon Gold
-- [ ] 2.1. Thêm các biến token màu neon vàng, cyan và hồng coral vào `:root`.
-- [ ] 2.2. Viết CSS thiết kế thẻ game kính mờ ở Lobby (`.game-card`).
-- [ ] 2.3. Định dạng lưới chơi cờ Tic Tac Toe `.ttt-grid` kích thước `320px x 320px` dùng CSS Grid.
-- [ ] 2.4. Thiết kế các quân cờ X, O phát sáng nổi bật trên nền tối.
-- [ ] 2.5. Tạo keyframe `pulse` cho các ô thắng cuộc chuyển sang màu nền vàng neon chớp nháy.
+### Phase 2: Định Dạng CSS & Giao Diện Kính Mờ Tím Neon
+- [ ] 2.1. Thêm token màu `--accent-purple` và hiệu ứng đổ bóng tím vào `:root`.
+- [ ] 2.2. Viết CSS thiết kế thẻ game kính mờ `.caro-theme` ở Lobby.
+- [ ] 2.3. Định dạng lưới bàn cờ `.caro-grid` hỗ trợ co giãn responsive tự động thích ứng với chiều rộng màn hình.
+- [ ] 2.4. Thiết kế các ô cờ `.caro-cell`, điểm sao `.star-point` và ký tự cờ X/O phát sáng neon.
+- [ ] 2.5. Tạo hiệu ứng nhấp nháy `.winning-cell` chuyển nền tím sáng rực khi kết thúc trận đấu.
 
-### Phase 3: Quản Lý State SPA & Thống Kê Profile
-- [ ] 3.1. Cập nhật `main.js` để khởi tạo đối tượng `GameHub` điều hướng view ẩn/hiện.
-- [ ] 3.2. Cài đặt các hàm chỉnh sửa nickname của profile người chơi và đồng bộ trực tiếp lên giao diện.
-- [ ] 3.3. Thực hiện đọc và ghi tổng hợp thắng/thua từ `localStorage` để cập nhật bảng stats của Lobby.
+### Phase 3: Quản Lý SPA & Đồng Bộ Stats Lên Dashboard
+- [ ] 3.1. Cập nhật `main.js` để gắn sự kiện bấm nút `#play-caro-btn` chuyển hướng sang view Caro.
+- [ ] 3.2. Cập nhật `ProfileManager` để đọc/ghi stats của Caro (`caro_pve_wins`, `caro_pvp_wins`, v.v.) từ `localStorage`.
+- [ ] 3.3. Tích hợp thắng cuộc Caro vào tổng trận thắng của Profile để phân cấp Rank chính xác.
 
-### Phase 4: Xây Dựng Core Game Logic (Local PvP)
-- [ ] 4.1. Tạo mới tệp `tictactoe.js`.
-- [ ] 4.2. Viết hàm khởi tạo `init()` và liên kết các sự kiện DOM của Tic Tac Toe view.
-- [ ] 4.3. Viết hàm kiểm tra thắng cuộc `checkWin()` cho 8 đường thắng hợp lệ.
-- [ ] 4.4. Thực hiện cơ chế nhấp nháy các ô thắng cuộc và chuyển đổi lượt chơi X/O.
-- [ ] 4.5. Triển khai nút "Restart Match" xóa sạch bảng đấu và nút "Clear Score".
+### Phase 4: Thiết Lập Core Logic Cờ Caro (Local PvP)
+- [ ] 4.1. Tạo mới tệp `caro.js`.
+- [ ] 4.2. Viết hàm khởi tạo `init()` liên kết các sự kiện DOM và hàm `generateBoard()` vẽ lưới 15x15.
+- [ ] 4.3. Cài đặt thuật toán kiểm tra thắng cuộc `checkWin()` quét theo 4 hướng từ vị trí đặt quân cờ mới nhất.
+- [ ] 4.4. Thực hiện logic đổi lượt chơi X/O và tô sáng các ô cờ thắng cuộc.
+- [ ] 4.5. Thực hiện logic nút "Undo" cho PvP (hoàn tác 1 nước) và "Restart Match" dọn dẹp bàn cờ.
 
-### Phase 5: Phát Triển Trí Tuệ Nhân Tạo AI (PvE)
-- [ ] 5.1. Tích hợp AI Dễ (Easy AI) đi ngẫu nhiên ô trống.
-- [ ] 5.2. Viết hàm đệ quy `minimax()` tính toán điểm số cho từng nước đi.
-- [ ] 5.3. Viết hàm tìm nước đi tốt nhất `getMinimaxMove()` liên kết vào game controller.
-- [ ] 5.4. Thêm hiệu ứng trễ `500ms` khi AI suy nghĩ để tăng trải nghiệm người dùng.
-- [ ] 5.5. Viết logic hoàn tác (Undo) phân biệt 1 bước (PvP) và 2 bước (PvE).
+### Phase 5: Phát Triển Đối Thuật AI (Easy & Heuristic PvE)
+- [ ] 5.1. Triển khai AI Dễ (Easy AI) chọn ô trống ngẫu nhiên.
+- [ ] 5.2. Viết hàm đánh giá điểm bàn cờ theo hướng phòng thủ và tấn công để làm AI Khó (Heuristic AI).
+- [ ] 5.3. Liên kết AI tự động đi sau một khoảng trễ giả lập `300ms` tạo trải nghiệm chân thực.
+- [ ] 5.4. Hoàn thiện logic hoàn tác (Undo) cho PvE lùi 2 nước cờ (Player + AI).
 
-### Phase 6: Thiết Lập Test Suite & QA Verify
-- [ ] 6.1. Tạo file kiểm thử `test_tictactoe_logic.js` chạy độc lập dưới môi trường Node.js.
-- [ ] 6.2. Mock đối tượng `document`, `localStorage` và nạp code `tictactoe.js` vào để test.
-- [ ] 6.3. Kiểm thử tính năng phát hiện thắng cuộc (`checkWin`).
-- [ ] 6.4. Kiểm thử khả năng cản phá nước đi thắng của người chơi từ AI Minimax.
-- [ ] 6.5. Kiểm thử khả năng tự động thực hiện nước đi dứt điểm giành chiến thắng của AI.
-- [ ] 6.6. Chạy và xác minh tất cả bài test đạt trạng thái PASS 100%.
+### Phase 6: Viết Bộ Unit Test & QA Verify
+- [ ] 6.1. Tạo file kiểm thử `test_caro_logic.js` độc lập chạy bằng Node.js.
+- [ ] 6.2. Mock đối tượng `window`, `document`, `localStorage` phục vụ cho việc kiểm thử `caro.js`.
+- [ ] 6.3. Viết test case kiểm tra thuật toán phát hiện thắng cuộc theo cả 4 hướng (ngang, dọc, chéo).
+- [ ] 6.4. Viết test case kiểm tra AI Heuristic có chặn được thế cờ 3 quân hoặc 4 quân của đối thủ hay không.
+- [ ] 6.5. Viết test case kiểm tra chức năng hoàn tác (Undo) hoạt động đúng mục đích trên cả PvP và PvE.
 
 ---
 
-## 5. Kịch Bản Kiểm Thử Xác Minh (Test Cases)
+## 5. Kịch Bản Kiểm Thử (Test Cases)
 
 | STT | Tác Vụ Kiểm Thử | Dữ Liệu Đầu Vào | Kết Quả Mong Đợi |
 |---|---|---|---|
-| 1 | Chuyển đổi màn hình SPA | Click "Play Now" ở thẻ Tic Tac Toe | Giao diện Lobby ẩn đi, màn chơi Tic Tac Toe hiển thị. |
-| 2 | Hoạt động chế độ PvP | Chơi luân phiên X và O tạo thành hàng ngang | Game kết thúc, hiển thị người thắng cuộc, 3 ô thắng chớp nháy màu vàng, cập nhật tỉ số PvP. |
-| 3 | AI chặn nước đi của người chơi | Người chơi đi X ở 0 và 1. Đấu PvE khó (Unbeatable). | AI (O) bắt buộc phải đi vào ô số 2 để cản phá đường thắng của người chơi. |
-| 4 | AI tự động dứt điểm chiến thắng | AI (O) có quân ở 4 và 5. Đến lượt AI. | AI (O) chọn đi vào ô số 3 hoặc 6 (tùy thế trận) để tạo chuỗi 3 quân thắng cuộc ngay lập tức. |
-| 5 | Tính năng hoàn tác PvP | Nhấp nút "Undo Move" ở chế độ PvP | Rút lại chính xác 1 nước đi vừa thực hiện, đưa lượt chơi về người chơi trước. |
-| 6 | Tính năng hoàn tác PvE | Nhấp nút "Undo Move" ở chế độ PvE | Rút lại đồng thời nước đi của AI và nước đi của người chơi trước đó, lượt đi quay về người chơi. |
-| 7 | Xóa lịch sử điểm số | Bấm nút "Clear Score" | Điểm số của chế độ hiện tại trong bảng stats và lưu trữ cục bộ reset về 0. Bảng stats Lobby cập nhật tương ứng. |
-| 8 | Đồng bộ Nickname | Sửa Nickname thành "CyberPlayer" | Tên người chơi ở Panel Profile cập nhật, hiển thị đúng ở các thống kê liên quan. |
-
----
-
-## 6. Phân Tích Rủi Ro & Biện Pháp Khắc Phục
-
-1. **Rủi ro 1: Thuật toán Minimax gây đơ trình duyệt**
-   - *Nguyên nhân*: Lưới 3x3 có số lượng tổ hợp trạng thái rất nhỏ (tối đa 9! = 362,880 trạng thái), nên Minimax chạy cực nhanh dưới 5ms. Tuy nhiên, nếu mở rộng lưới lớn hơn, đệ quy sẽ bị chậm.
-   - *Khắc phục*: Giới hạn thuật toán này riêng cho bảng 3x3. Không áp dụng đệ quy sâu không giới hạn cho các dạng bàn cờ Gomoku/Caro lớn mà không có cắt tỉa Alpha-Beta hay giới hạn độ sâu.
-2. **Rủi ro 2: AI di chuyển tức thời làm hỏng trải nghiệm người dùng**
-   - *Khắc phục*: Sử dụng `setTimeout` tạo độ trễ giả lập `500ms` trước khi AI đặt quân cờ, hiển thị trạng thái "AI is thinking..." để giao diện sinh động và tự nhiên hơn.
-3. **Rủi ro 3: Trạng thái không đồng bộ khi nhấn nút quay lại Lobby lúc đang dở trận**
-   - *Khắc phục*: Tự động lưu trạng thái game dở dang hoặc reset hoàn toàn bảng chơi khi chuyển đổi view để đảm bảo tính nhất quán của dữ liệu.
+| 1 | Khởi tạo bàn cờ | Bấm "Play Now" ở thẻ Caro | Vẽ đúng lưới 15x15 = 225 ô cờ. Xuất hiện đúng 5 điểm sao Gomoku ở các tọa độ thiết kế. |
+| 2 | Phát hiện thắng dọc | Đặt 5 quân X liên tiếp từ `(2,3)` đến `(6,3)` | Trận đấu dừng, hiển thị modal X thắng, 5 ô thắng chớp nháy màu tím neon. |
+| 3 | AI phòng thủ cản phá | Người chơi đi X tại các ô `(5,5), (5,6), (5,7)`. Đấu PvE Khó. | AI (O) tự động đi cản phá tại `(5,4)` hoặc `(5,8)` để phá vỡ thế cờ thắng của đối thủ. |
+| 4 | AI tấn công dứt điểm | AI (O) có thế cờ `(4,4), (4,5), (4,6)`. Đến lượt AI. | AI (O) tự động đặt quân vào `(4,3)` hoặc `(4,7)` để tạo chuỗi 4 hoặc 5 giành chiến thắng. |
+| 5 | Tính năng hoàn tác PvP | Nhấp nút "Undo" ở chế độ PvP | Bảng đấu lùi lại đúng 1 lượt đi cuối cùng, khôi phục lượt đi về người chơi trước. |
+| 6 | Tính năng hoàn tác PvE | Nhấp nút "Undo" ở chế độ PvE | Bảng đấu lùi lại 2 lượt đi (của AI và của người chơi), lượt đi chuyển về cho người chơi. |
+| 7 | Xóa lịch sử điểm số | Bấm nút "Clear Score" | Điểm số của chế độ hiện tại reset về 0. Thống kê ở Lobby cập nhật tương ứng. |

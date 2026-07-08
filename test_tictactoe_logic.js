@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 // Read tictactoe.js content
-const tttPath = path.join(__dirname, 'tictactoe.js');
+const tttPath = path.join(__dirname, 'js', 'games', 'tictactoe.js');
 const code = fs.readFileSync(tttPath, 'utf8');
 
 // Mock DOM elements

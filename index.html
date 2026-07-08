@@ -63,6 +63,18 @@
                 </div>
                 <button id="play-ttt-btn" class="btn primary-btn gold-btn">Play Now</button>
             </div>
+
+            <!-- Caro Card -->
+            <div class="game-card glass-card caro-theme">
+                <div class="game-icon">⚔️</div>
+                <h3 class="game-title">Cờ Caro</h3>
+                <p class="game-desc">Trải nghiệm cờ Caro 15x15 truyền thống. Đấu với bạn bè hoặc thách thức AI thông minh.</p>
+                <div class="game-stats">
+                    <span>Wins: <strong id="stats-caro-wins">0</strong></span>
+                    <span>Draws: <strong id="stats-caro-draws">0</strong></span>
+                </div>
+                <button id="play-caro-btn" class="btn primary-btn purple-btn">Play Now</button>
+            </div>
         </main>
     </div>
 
@@ -165,17 +177,80 @@
                 <div class="ttt-cell" data-index="8"></div>
             </main>
 
-            <footer class="ttt-controls">
+             <footer class="ttt-controls">
                 <button id="ttt-undo-btn" class="btn" disabled>↩ Undo</button>
                 <button id="ttt-restart-btn" class="btn primary-btn gold-btn">🔄 Restart Match</button>
                 <button id="ttt-clear-btn" class="btn danger-btn">🗑️ Clear Score</button>
+             </footer>
+        </div>
+    </div>
+
+    <!-- Caro View -->
+    <div id="caro-view" class="view-container hidden">
+        <div class="game-container caro-container">
+            <header class="caro-header">
+                <div class="header-nav">
+                    <button class="back-to-lobby-btn btn">← Back to Lobby</button>
+                </div>
+                <h1 class="caro-title">Cờ Caro</h1>
+                
+                <!-- Game Configuration -->
+                <div class="caro-config glass-card">
+                    <div class="config-group">
+                        <span class="config-label">Chế độ:</span>
+                        <div class="segmented-control">
+                            <button id="caro-mode-pvp-btn" class="segment-btn active">PvP</button>
+                            <button id="caro-mode-pve-btn" class="segment-btn">PvE (AI)</button>
+                        </div>
+                    </div>
+                    <div id="caro-ai-difficulty-group" class="config-group hidden">
+                        <span class="config-label">Độ khó:</span>
+                        <div class="segmented-control">
+                            <button id="caro-diff-easy-btn" class="segment-btn active">Dễ</button>
+                            <button id="caro-diff-hard-btn" class="segment-btn">Khó (AI)</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Match Scoreboard -->
+                <div class="stats caro-stats">
+                    <div class="stat-box">
+                        <span class="label" id="caro-lbl-player-x">Player X</span>
+                        <span class="value" id="caro-score-x">0</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="label">Draws</span>
+                        <span class="value" id="caro-score-draws">0</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="label" id="caro-lbl-player-o">Player O</span>
+                        <span class="value" id="caro-score-o">0</span>
+                    </div>
+                </div>
+
+                <!-- Turn Status -->
+                <div class="caro-status-bar glass-card">
+                    <span id="caro-status">Lượt của Player X</span>
+                </div>
+            </header>
+
+            <main class="caro-grid" id="caro-board">
+                <!-- Grid cells will be generated dynamically by JS -->
+            </main>
+
+            <footer class="caro-controls">
+                <button id="caro-undo-btn" class="btn" disabled>↩ Undo</button>
+                <button id="caro-restart-btn" class="btn primary-btn purple-btn">🔄 Restart Match</button>
+                <button id="caro-clear-btn" class="btn danger-btn">🗑️ Clear Score</button>
             </footer>
         </div>
     </div>
 
     <!-- Central navigation script -->
-    <script src="main.js"></script>
+    <script src="js/main.js"></script>
     <!-- Game specific scripts -->
-    <script src="tictactoe.js"></script>
+    <script src="js/games/match.js"></script>
+    <script src="js/games/tictactoe.js"></script>
+    <script src="js/games/caro.js"></script>
 </body>
 </html>

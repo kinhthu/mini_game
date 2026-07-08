@@ -701,3 +701,153 @@ h1 {
         flex-direction: column;
     }
 }
+
+/* --- Caro Game Styles --- */
+:root {
+    --accent-purple: #a55eea;
+    --shadow-purple-glow: 0 0 15px rgba(165, 94, 234, 0.4);
+}
+
+.game-card.caro-theme:hover::before {
+    background: var(--accent-purple);
+}
+
+.purple-btn {
+    background: linear-gradient(135deg, #8854d0, #a55eea);
+    border: none;
+    box-shadow: 0 4px 15px rgba(165, 94, 234, 0.4);
+}
+
+.purple-btn:hover {
+    background: linear-gradient(135deg, #7040b0, #8854d0);
+    box-shadow: 0 6px 20px rgba(165, 94, 234, 0.6);
+}
+
+.caro-container {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.caro-config {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    width: 100%;
+    padding: 1rem;
+    gap: 1.5rem;
+    margin-bottom: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.caro-stats {
+    width: 100%;
+    margin-top: 0.5rem;
+}
+
+.caro-status-bar {
+    width: 100%;
+    padding: 0.75rem;
+    text-align: center;
+    font-weight: 600;
+    font-size: 1.1rem;
+    letter-spacing: 0.05em;
+    color: #e2e8f0;
+    margin-bottom: 0.5rem;
+}
+
+.caro-grid {
+    display: grid;
+    grid-template-columns: repeat(15, 1fr);
+    gap: 4px;
+    width: 100%;
+    max-width: 550px;
+    margin: 0.5rem auto;
+    aspect-ratio: 1 / 1;
+    position: relative;
+}
+
+.caro-cell {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: min(2.5vw, 1.4rem);
+    font-weight: 800;
+    transition: all 0.2s ease;
+    aspect-ratio: 1 / 1;
+    user-select: none;
+    position: relative;
+}
+
+.caro-cell:hover {
+    background: rgba(255, 255, 255, 0.07);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Star Points for Gomoku board */
+.caro-cell.star-point::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.35);
+    border-radius: 50%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+}
+
+.caro-cell.x {
+    color: var(--accent-cyan);
+    text-shadow: 0 0 10px var(--accent-cyan);
+}
+
+.caro-cell.o {
+    color: var(--accent-coral);
+    text-shadow: 0 0 10px var(--accent-coral);
+}
+
+.caro-cell.winning {
+    background: rgba(165, 94, 234, 0.3) !important;
+    border-color: var(--accent-purple) !important;
+    animation: winningPulse 1s infinite alternate;
+}
+
+@keyframes winningPulse {
+    from { box-shadow: 0 0 5px var(--accent-purple); }
+    to { box-shadow: 0 0 20px var(--accent-purple); }
+}
+
+.caro-controls {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    width: 100%;
+    margin-top: 1rem;
+}
+
+/* Hover preview of X/O */
+#caro-board:not(.locked) .caro-cell:not(.x):not(.o):hover::after {
+    content: var(--hover-symbol);
+    color: var(--hover-color);
+    opacity: 0.35;
+    font-weight: 800;
+}
+
+/* Responsive Caro Grid */
+@media (max-width: 500px) {
+    .caro-grid {
+        gap: 2px;
+    }
+    .caro-config {
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+    }
+    .caro-controls {
+        flex-direction: column;
+    }
+}
