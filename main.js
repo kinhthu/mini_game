@@ -1,286 +1,347 @@
-// Profile Manager to persist and manage user stats
+// Global state for Profile and Stats
 const ProfileManager = {
-    storageKey: 'arcade_profile',
-    data: {
-        nickname: 'ArcadeRider',
-        stats: {
-            totalPlayed: 0,
-            wins: 0,
-            winRate: 0,
-            matchBestTime4: null,
-            matchBestTime6: null,
-            matchBestTime8: null,
-            g2048HighScore: 0,
-            caroWins: 0,
-            caroLosses: 0
+    getNickname() {
+        return localStorage.getItem('player_nickname') || 'CyberPlayer';
+    },
+    setNickname(name) {
+        if (name && name.trim()) {
+            localStorage.setItem('player_nickname', name.trim());
+            this.updateUI();
         }
     },
-
-    load() {
-        const stored = localStorage.getItem(this.storageKey);
-        if (stored) {
-            try {
-                this.data = JSON.parse(stored);
-                // Ensure stats exists
-                if (!this.data.stats) {
-                    this.data.stats = {
-                        totalPlayed: 0,
-                        wins: 0,
-                        winRate: 0,
-                        matchBestTime4: null,
-                        matchBestTime6: null,
-                        matchBestTime8: null,
-                        g2048HighScore: 0,
-                        caroWins: 0,
-                        caroLosses: 0
-                    };
-                }
-            } catch (e) {
-                console.error("Failed to parse profile data", e);
-            }
-        }
+    getRank(wins) {
+        if (wins >= 15) return 'Grandmaster 🏆';
+        if (wins >= 10) return 'Pro Gamer ⚡';
+        if (wins >= 5) return 'Challenger 🌟';
+        return 'Beginner 🎮';
     },
+    updateUI() {
+        const nicknameEl = document.getElementById('player-nickname');
+        const rankEl = document.getElementById('player-rank');
+        if (nicknameEl) nicknameEl.textContent = this.getNickname();
+        
+        // Calculate global wins to set rank
+        const memoryWins = parseInt(localStorage.getItem('memory_match_wins') || '0', 10);
+        const tttWins = parseInt(localStorage.getItem('ttt_pve_wins') || '0', 10) + 
+                        parseInt(localStorage.getItem('ttt_pvp_wins') || '0', 10);
+        const totalWins = memoryWins + tttWins;
+        if (rankEl) rankEl.textContent = this.getRank(totalWins);
 
-    save() {
-        localStorage.setItem(this.storageKey, JSON.stringify(this.data));
-    },
+        // Update Lobby stats
+        const memoryPlayed = parseInt(localStorage.getItem('memory_match_played') || '0', 10);
+        const tttPlayed = parseInt(localStorage.getItem('ttt_pve_played') || '0', 10) + 
+                          parseInt(localStorage.getItem('ttt_pvp_played') || '0', 10);
+        
+        const totalPlayed = memoryPlayed + tttPlayed;
+        const globalPlayedEl = document.getElementById('global-played');
+        if (globalPlayedEl) globalPlayedEl.textContent = totalPlayed;
 
-    getRank(played, wins) {
-        if (played >= 30 && wins >= 20) return "Cyber Legend";
-        if (played >= 30 && wins >= 15) return "Console Veteran";
-        if (played >= 15 && wins >= 5) return "Grid Master";
-        if (played >= 5 && wins >= 2) return "Neon Runner";
-        return "Arcade Initiate";
-    },
-
-    updateNickname(nick) {
-        if (!nick || nick.trim() === '') return false;
-        let cleaned = nick.trim();
-        if (cleaned.length > 16) {
-            cleaned = cleaned.substring(0, 16);
+        const globalWinrateEl = document.getElementById('global-winrate');
+        if (globalWinrateEl) {
+            const wr = totalPlayed > 0 ? Math.round((totalWins / totalPlayed) * 100) : 0;
+            globalWinrateEl.textContent = `${wr}%`;
         }
-        this.data.nickname = cleaned;
-        this.save();
-        return true;
-    },
 
-    recordGame(gameId, won, stats) {
-        this.data.stats.totalPlayed++;
-        if (won) {
-            this.data.stats.wins++;
-        }
-        this.data.stats.winRate = Math.round((this.data.stats.wins / this.data.stats.totalPlayed) * 100);
+        // Update Memory Match specific stats on Lobby
+        const memoryWinsEl = document.getElementById('stats-memory-wins');
+        if (memoryWinsEl) memoryWinsEl.textContent = memoryWins;
+        const memoryLevelEl = document.getElementById('stats-memory-level');
+        if (memoryLevelEl) memoryLevelEl.textContent = localStorage.getItem('memory_match_level') || '1';
 
-        if (gameId === 'match' && stats) {
-            const grid = stats.grid;
-            const time = stats.time;
-            const key = `matchBestTime${grid}`;
-            if (this.data.stats[key] === undefined) {
-                this.data.stats[key] = null;
-            }
-            if (this.data.stats[key] === null || time < this.data.stats[key]) {
-                this.data.stats[key] = time;
-            }
-        } else if (gameId === 'g2048' && stats) {
-            const score = stats.score;
-            if (score > this.data.stats.g2048HighScore) {
-                this.data.stats.g2048HighScore = score;
-            }
-        } else if (gameId === 'caro' && stats) {
-            if (stats.result === 'win' || won) {
-                this.data.stats.caroWins = (this.data.stats.caroWins || 0) + 1;
-            } else if (stats.result === 'lose' || !won) {
-                this.data.stats.caroLosses = (this.data.stats.caroLosses || 0) + 1;
-            }
+        // Update Tic Tac Toe specific stats on Lobby
+        const tttWinsEl = document.getElementById('stats-ttt-wins');
+        if (tttWinsEl) tttWinsEl.textContent = tttWins;
+        const tttDrawsEl = document.getElementById('stats-ttt-draws');
+        if (tttDrawsEl) {
+            const draws = parseInt(localStorage.getItem('ttt_pve_draws') || '0', 10) + 
+                          parseInt(localStorage.getItem('ttt_pvp_draws') || '0', 10);
+            tttDrawsEl.textContent = draws;
         }
-        this.save();
     }
 };
 
-// Global coordinator namespace
+// Navigation controller
 const GameHub = {
-    profile: ProfileManager,
+    showView(viewId) {
+        document.querySelectorAll('.view-container').forEach(view => {
+            view.classList.add('hidden');
+        });
+        const activeView = document.getElementById(viewId);
+        if (activeView) {
+            activeView.classList.remove('hidden');
+        }
+        
+        // Refresh Lobby stats if navigated back
+        if (viewId === 'lobby-view') {
+            ProfileManager.updateUI();
+        }
+    }
+};
+
+// --- Memory Match Game Logic (Encapsulated) ---
+const MemoryMatch = {
+    allEmojis: ['🚀', '🛸', '🛰️', '🪐', '☄️', '🌌', '👨‍🚀', '👽', '🌎', '⭐', '🌞', '🌙', '🌠', '🌩️', '☀️', '☁️', '❄️', '🔥'],
+    currentLevel: 1,
+    currentEmojis: [],
+    cards: [],
+    flippedCards: [],
+    matchedPairs: 0,
+    moves: 0,
+    timer: null,
+    seconds: 0,
+    gameStarted: false,
+    isLocked: false,
 
     init() {
-        this.profile.load();
-        this.bindEvents();
-        this.updateLobbyStats();
-        this.showView('lobby-view');
-    },
+        this.grid = document.getElementById('grid');
+        this.movesDisplay = document.getElementById('moves');
+        this.timeDisplay = document.getElementById('time');
+        this.restartBtn = document.getElementById('restart-btn');
+        this.modalOverlay = document.getElementById('win-modal');
+        this.playAgainBtn = document.getElementById('play-again-btn');
+        this.nextLevelBtn = document.getElementById('next-level-btn');
+        this.finalMoves = document.getElementById('final-moves');
+        this.finalTime = document.getElementById('final-time');
+        this.currentLevelDisplay = document.getElementById('current-level');
 
-    bindEvents() {
-        // Edit Nickname
-        const editBtn = document.getElementById('edit-nickname-btn');
-        const nickInput = document.getElementById('nickname-input');
-        const rankDisplay = document.getElementById('user-rank');
-        const nickDisplay = document.getElementById('user-nickname');
-
-        if (editBtn && nickInput) {
-            editBtn.onclick = () => {
-                const isEditing = editBtn.textContent === 'Save';
-                if (isEditing) {
-                    const newNick = nickInput.value;
-                    if (this.profile.updateNickname(newNick)) {
-                        nickInput.style.display = 'none';
-                        nickDisplay.textContent = this.profile.data.nickname;
-                        nickDisplay.style.display = 'inline';
-                        editBtn.textContent = 'Edit';
-                        this.updateLobbyStats();
-                        this.showNotification('Nickname updated successfully!', 'success');
-                    } else {
-                        this.showNotification('Invalid nickname!', 'error');
-                    }
-                } else {
-                    nickInput.value = this.profile.data.nickname;
-                    nickInput.style.display = 'inline';
-                    nickDisplay.style.display = 'none';
-                    editBtn.textContent = 'Save';
-                }
-            };
+        // Bind events once
+        if (this.restartBtn && !this.restartBtn.dataset.bound) {
+            this.restartBtn.addEventListener('click', () => {
+                this.currentLevel = 1;
+                if (this.currentLevelDisplay) this.currentLevelDisplay.textContent = this.currentLevel;
+                localStorage.setItem('memory_match_level', this.currentLevel);
+                this.resetGame();
+            });
+            this.restartBtn.dataset.bound = true;
         }
 
-        // Back to lobby buttons
-        const backBtns = document.querySelectorAll('.back-btn');
-        backBtns.forEach(btn => {
-            btn.onclick = () => {
-                this.showView('lobby-view');
-            };
-        });
-
-        // Modal close buttons
-        const modalConfirm = document.getElementById('global-modal-confirm');
-        const modalCancel = document.getElementById('global-modal-cancel');
-        const modalOverlay = document.getElementById('global-modal');
-
-        if (modalConfirm && modalOverlay) {
-            modalConfirm.onclick = () => {
-                modalOverlay.classList.remove('active');
-                if (this.activeModalConfig && this.activeModalConfig.onConfirm) {
-                    this.activeModalConfig.onConfirm();
-                }
-            };
+        if (this.playAgainBtn && !this.playAgainBtn.dataset.bound) {
+            this.playAgainBtn.addEventListener('click', () => {
+                this.resetGame();
+            });
+            this.playAgainBtn.dataset.bound = true;
         }
-        if (modalCancel && modalOverlay) {
-            modalCancel.onclick = () => {
-                modalOverlay.classList.remove('active');
-                if (this.activeModalConfig && this.activeModalConfig.onCancel) {
-                    this.activeModalConfig.onCancel();
-                }
-            };
+
+        if (this.nextLevelBtn && !this.nextLevelBtn.dataset.bound) {
+            this.nextLevelBtn.addEventListener('click', () => {
+                this.currentLevel++;
+                if (this.currentLevelDisplay) this.currentLevelDisplay.textContent = this.currentLevel;
+                localStorage.setItem('memory_match_level', this.currentLevel);
+                this.resetGame();
+            });
+            this.nextLevelBtn.dataset.bound = true;
         }
-    },
-
-    showView(viewId) {
-        const views = document.querySelectorAll('.view-section');
-        views.forEach(v => {
-            if (v.id === viewId) {
-                v.style.display = 'flex';
-                v.classList.remove('hidden');
-            } else {
-                v.style.display = 'none';
-                v.classList.add('hidden');
-            }
-        });
-
-        if (viewId === 'match-view' && window.MatchGame) {
-            window.MatchGame.init();
-        } else if (viewId === 'g2048-view' && window.Game2048) {
-            window.Game2048.init();
-        } else if (viewId === 'caro-view' && window.CaroGame) {
-            window.CaroGame.init();
-        } else if (viewId === 'lobby-view') {
-            this.updateLobbyStats();
-        }
-    },
-
-    updateLobbyStats() {
-        const stats = this.profile.data.stats;
         
-        // Update user panel
-        const nickDisplay = document.getElementById('user-nickname');
-        const rankDisplay = document.getElementById('user-rank');
-        if (nickDisplay) nickDisplay.textContent = this.profile.data.nickname;
-        if (rankDisplay) rankDisplay.textContent = this.profile.getRank(stats.totalPlayed, stats.wins);
+        // Load level from localStorage
+        this.currentLevel = parseInt(localStorage.getItem('memory_match_level') || '1', 10);
+        if (this.currentLevelDisplay) this.currentLevelDisplay.textContent = this.currentLevel;
 
-        // Update stats items
-        const playedCount = document.getElementById('total-played-count');
-        const winRateVal = document.getElementById('total-win-rate');
-        if (playedCount) playedCount.textContent = stats.totalPlayed;
-        if (winRateVal) winRateVal.textContent = stats.winRate + '%';
-
-        // Memory game stats
-        const memoryBestTime4 = document.getElementById('memory-best-4');
-        const memoryBestTime6 = document.getElementById('memory-best-6');
-        if (memoryBestTime4) {
-            memoryBestTime4.textContent = stats.matchBestTime4 ? stats.matchBestTime4 + 's' : 'N/A';
-        }
-        if (memoryBestTime6) {
-            memoryBestTime6.textContent = stats.matchBestTime6 ? stats.matchBestTime6 + 's' : 'N/A';
-        }
-
-        // Caro game stats
-        const caroWinsDisplay = document.getElementById('caro-wins');
-        const caroLossesDisplay = document.getElementById('caro-losses');
-        if (caroWinsDisplay) caroWinsDisplay.textContent = stats.caroWins || 0;
-        if (caroLossesDisplay) caroLossesDisplay.textContent = stats.caroLosses || 0;
+        this.resetGame();
     },
 
-    showNotification(msg, type = 'info') {
-        const container = document.getElementById('notification-container');
-        if (!container) return;
+    shuffle(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    },
 
-        const toast = document.createElement('div');
-        toast.className = `toast ${type}`;
-        toast.textContent = msg;
-        container.appendChild(toast);
+    formatTime(secs) {
+        const m = Math.floor(secs / 60);
+        const s = secs % 60;
+        return `${m}:${s.toString().padStart(2, '0')}`;
+    },
 
-        // Fade in
-        setTimeout(() => toast.classList.add('show'), 10);
+    startTimer() {
+        if (!this.gameStarted) {
+            this.gameStarted = true;
+            // Record game played
+            const played = parseInt(localStorage.getItem('memory_match_played') || '0', 10);
+            localStorage.setItem('memory_match_played', played + 1);
 
-        // Remove
+            this.timer = setInterval(() => {
+                this.seconds++;
+                if (this.timeDisplay) this.timeDisplay.textContent = this.formatTime(this.seconds);
+            }, 1000);
+        }
+    },
+
+    stopTimer() {
+        clearInterval(this.timer);
+    },
+
+    getGridDimensions(numPairs) {
+        if (numPairs <= 6) return 4;
+        if (numPairs <= 8) return 4;
+        if (numPairs <= 10) return 5;
+        if (numPairs <= 12) return 6;
+        if (numPairs <= 15) return 6;
+        return 6;
+    },
+
+    createBoard() {
+        if (!this.grid) return;
+        this.grid.innerHTML = '';
+        
+        let numPairs = 6 + (this.currentLevel - 1) * 2;
+        if (numPairs > this.allEmojis.length) {
+            numPairs = this.allEmojis.length;
+        }
+        
+        this.currentEmojis = this.allEmojis.slice(0, numPairs);
+        this.cards = [...this.currentEmojis, ...this.currentEmojis];
+        
+        const shuffledCards = this.shuffle([...this.cards]);
+        
+        const cols = this.getGridDimensions(numPairs);
+        this.grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+        
+        shuffledCards.forEach((emoji, index) => {
+            const card = document.createElement('div');
+            card.classList.add('card');
+            card.dataset.emoji = emoji;
+            card.dataset.index = index;
+            
+            const front = document.createElement('div');
+            front.classList.add('card-face', 'card-front');
+            
+            const back = document.createElement('div');
+            back.classList.add('card-face', 'card-back');
+            back.textContent = emoji;
+            
+            card.appendChild(front);
+            card.appendChild(back);
+            
+            card.addEventListener('click', this.flipCard.bind(this, card));
+            
+            this.grid.appendChild(card);
+        });
+    },
+
+    flipCard(cardEl) {
+        if (this.isLocked) return;
+        if (cardEl.classList.contains('flipped') || cardEl.classList.contains('matched')) return;
+        if (cardEl === this.flippedCards[0]) return;
+        
+        this.startTimer();
+        
+        cardEl.classList.add('flipped');
+        this.flippedCards.push(cardEl);
+        
+        if (this.flippedCards.length === 2) {
+            this.moves++;
+            if (this.movesDisplay) this.movesDisplay.textContent = this.moves;
+            this.checkForMatch();
+        }
+    },
+
+    checkForMatch() {
+        let isMatch = this.flippedCards[0].dataset.emoji === this.flippedCards[1].dataset.emoji;
+        
+        if (isMatch) {
+            this.disableCards();
+        } else {
+            this.unflipCards();
+        }
+    },
+
+    disableCards() {
+        this.flippedCards[0].classList.add('matched');
+        this.flippedCards[1].classList.add('matched');
+        
+        this.matchedPairs++;
+        this.flippedCards = [];
+        
+        if (this.matchedPairs === this.currentEmojis.length) {
+            this.gameOver();
+        }
+    },
+
+    unflipCards() {
+        this.isLocked = true;
+        
         setTimeout(() => {
-            toast.classList.remove('show');
-            setTimeout(() => toast.remove(), 300);
-        }, 3000);
+            this.flippedCards[0].classList.remove('flipped');
+            this.flippedCards[1].classList.remove('flipped');
+            
+            this.flippedCards = [];
+            this.isLocked = false;
+        }, 1000);
     },
 
-    activeModalConfig: null,
-    showModal(config) {
-        this.activeModalConfig = config;
-        const modalOverlay = document.getElementById('global-modal');
-        const modalTitle = document.getElementById('global-modal-title');
-        const modalMessage = document.getElementById('global-modal-message');
-        const modalConfirm = document.getElementById('global-modal-confirm');
-        const modalCancel = document.getElementById('global-modal-cancel');
+    gameOver() {
+        this.stopTimer();
+        
+        // Save victory stat
+        const wins = parseInt(localStorage.getItem('memory_match_wins') || '0', 10);
+        localStorage.setItem('memory_match_wins', wins + 1);
 
-        if (modalOverlay) {
-            if (modalTitle) modalTitle.textContent = config.title || 'Notification';
-            if (modalMessage) modalMessage.textContent = config.message || '';
-            if (modalConfirm) modalConfirm.textContent = config.confirmText || 'OK';
-            if (modalCancel) {
-                if (config.cancelText) {
-                    modalCancel.textContent = config.cancelText;
-                    modalCancel.style.display = 'inline-block';
-                } else {
-                    modalCancel.style.display = 'none';
-                }
-            }
-            modalOverlay.classList.add('active');
-        }
+        setTimeout(() => {
+            if (this.finalMoves) this.finalMoves.textContent = this.moves;
+            if (this.finalTime) this.finalTime.textContent = this.formatTime(this.seconds);
+            if (this.modalOverlay) this.modalOverlay.classList.add('active');
+        }, 500);
+    },
+
+    resetGame() {
+        this.stopTimer();
+        this.gameStarted = false;
+        this.isLocked = false;
+        this.flippedCards = [];
+        this.matchedPairs = 0;
+        this.moves = 0;
+        this.seconds = 0;
+        
+        if (this.movesDisplay) this.movesDisplay.textContent = '0';
+        if (this.timeDisplay) this.timeDisplay.textContent = '0:00';
+        if (this.modalOverlay) this.modalOverlay.classList.remove('active');
+        
+        this.createBoard();
     }
 };
 
-// Dummy ParticleBackground class for unit tests compatibility
-class ParticleBackground {
-    constructor() {}
-    init() {}
-}
-
-window.ProfileManager = ProfileManager;
-window.GameHub = GameHub;
-window.ParticleBackground = ParticleBackground;
-
-// Initialize coordinator on DOM load
+// Initialize App navigation and listeners on DOMContentLoaded
 document.addEventListener('DOMContentLoaded', () => {
-    GameHub.init();
+    // Navigation binds
+    const playMemoryBtn = document.getElementById('play-memory-btn');
+    if (playMemoryBtn) {
+        playMemoryBtn.addEventListener('click', () => {
+            GameHub.showView('memory-match-view');
+            MemoryMatch.init();
+        });
+    }
+
+    const playTttBtn = document.getElementById('play-ttt-btn');
+    if (playTttBtn) {
+        playTttBtn.addEventListener('click', () => {
+            GameHub.showView('tictactoe-view');
+            if (window.TicTacToeGame) {
+                window.TicTacToeGame.init();
+            }
+        });
+    }
+
+    document.querySelectorAll('.back-to-lobby-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            // Stop timers/games if applicable
+            MemoryMatch.stopTimer();
+            GameHub.showView('lobby-view');
+        });
+    });
+
+    // Nickname Edit Bind
+    const editNicknameBtn = document.getElementById('edit-nickname-btn');
+    if (editNicknameBtn) {
+        editNicknameBtn.addEventListener('click', () => {
+            const currentName = ProfileManager.getNickname();
+            const newName = prompt('Enter your new nickname:', currentName);
+            if (newName !== null) {
+                ProfileManager.setNickname(newName);
+            }
+        });
+    }
+
+    // Initial Profile & Stats Load
+    ProfileManager.updateUI();
 });

@@ -3,80 +3,77 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Neon Game Suite</title>
+    <title>Mini Game Hub</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="cyber-bg"></div>
+    <!-- Lobby View -->
+    <div id="lobby-view" class="view-container">
+        <header class="lobby-header">
+            <h1 class="neon-title">Mini Game Hub</h1>
+            <p class="subtitle">Select a game to start playing</p>
+        </header>
 
-    <div class="app-container">
-        <!-- LOBBY VIEW -->
-        <section id="lobby-view" class="view-section">
-            <header class="lobby-header">
-                <h1 class="glow-title">NEON GAME SUITE</h1>
-                
-                <div class="user-panel glass-card">
-                    <div class="user-avatar">👤</div>
-                    <div class="user-info">
-                        <div class="nick-container">
-                            <span id="user-nickname" class="nickname">ArcadeRider</span>
-                            <input type="text" id="nickname-input" class="nick-input" style="display: none;" maxlength="15">
-                            <button id="edit-nickname-btn" class="edit-btn">Edit</button>
-                        </div>
-                        <div id="user-rank" class="rank">Arcade Initiate</div>
+        <section class="profile-section glass-card">
+            <div class="profile-info">
+                <div class="avatar">🎮</div>
+                <div class="details">
+                    <div class="name-row">
+                        <span id="player-nickname" class="nickname">Player</span>
+                        <button id="edit-nickname-btn" class="icon-btn" title="Edit Nickname">✏️</button>
                     </div>
+                    <span id="player-rank" class="rank">Beginner</span>
                 </div>
-            </header>
-
-            <div class="lobby-content">
-                <div class="stats-panel glass-card">
-                    <h2>GLOBAL STATS</h2>
-                    <div class="stats-grid">
-                        <div class="stat-item">
-                            <span class="stat-label">Total Played</span>
-                            <span id="total-played-count" class="stat-val">0</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-label">Win Rate</span>
-                            <span id="total-win-rate" class="stat-val">0%</span>
-                        </div>
-                    </div>
+            </div>
+            <div class="divider"></div>
+            <div class="global-stats">
+                <div class="stat-item">
+                    <span class="label">Total Games</span>
+                    <span id="global-played" class="value">0</span>
                 </div>
-
-                <div class="games-grid">
-                    <!-- Memory Card Game -->
-                    <div class="game-card glass-card">
-                        <div class="game-icon">🎴</div>
-                        <h3>Memory Match</h3>
-                        <p>Train your brain by finding matching neon emojis under pressure.</p>
-                        <div class="game-stats">
-                            <div>Best 4x4: <span id="memory-best-4">N/A</span></div>
-                            <div>Best 6x6: <span id="memory-best-6">N/A</span></div>
-                        </div>
-                        <button class="btn nav-btn primary-btn" onclick="GameHub.showView('match-view')">Play Now</button>
-                    </div>
-
-                    <!-- Caro (Gomoku) -->
-                    <div class="game-card glass-card">
-                        <div class="game-icon">⚔️</div>
-                        <h3>Cờ Caro</h3>
-                        <p>Classic 15x15 Gomoku. Play PvP locally or challenge the defensive heuristic AI.</p>
-                        <div class="game-stats">
-                            <div>Wins: <span id="caro-wins">0</span></div>
-                            <div>Losses: <span id="caro-losses">0</span></div>
-                        </div>
-                        <button class="btn nav-btn primary-btn" onclick="GameHub.showView('caro-view')">Play Now</button>
-                    </div>
+                <div class="stat-item">
+                    <span class="label">Global Win Rate</span>
+                    <span id="global-winrate" class="value">0%</span>
                 </div>
             </div>
         </section>
 
-        <!-- MEMORY MATCH VIEW -->
-        <section id="match-view" class="view-section hidden">
-            <header class="game-header">
-                <button class="back-btn btn secondary-btn">⬅ Lobby</button>
-                <h2>Memory Match</h2>
+        <main class="games-grid">
+            <!-- Memory Match Card -->
+            <div class="game-card glass-card memory-theme">
+                <div class="game-icon">🧠</div>
+                <h3 class="game-title">Memory Match</h3>
+                <p class="game-desc">Test your memory and match all the pairs in minimum moves.</p>
+                <div class="game-stats">
+                    <span>Wins: <strong id="stats-memory-wins">0</strong></span>
+                    <span>Level: <strong id="stats-memory-level">1</strong></span>
+                </div>
+                <button id="play-memory-btn" class="btn primary-btn">Play Now</button>
+            </div>
+
+            <!-- Tic Tac Toe Card -->
+            <div class="game-card glass-card tictactoe-theme">
+                <div class="game-icon">❌⭕</div>
+                <h3 class="game-title">Tic Tac Toe</h3>
+                <p class="game-desc">Play against a friend or challenge our unbeatable AI.</p>
+                <div class="game-stats">
+                    <span>Wins: <strong id="stats-ttt-wins">0</strong></span>
+                    <span>Draws: <strong id="stats-ttt-draws">0</strong></span>
+                </div>
+                <button id="play-ttt-btn" class="btn primary-btn gold-btn">Play Now</button>
+            </div>
+        </main>
+    </div>
+
+    <!-- Memory Match View -->
+    <div id="memory-match-view" class="view-container hidden">
+        <div class="game-container">
+            <header>
+                <div class="header-nav">
+                    <button class="back-to-lobby-btn btn">← Back to Lobby</button>
+                </div>
+                <h1>Memory Match <span style="font-size: 1.5rem; color: var(--accent-color);">(Level <span id="current-level">1</span>)</span></h1>
                 <div class="stats">
                     <div class="stat-box">
                         <span class="label">Moves</span>
@@ -87,88 +84,98 @@
                         <span class="value" id="time">0:00</span>
                     </div>
                 </div>
+                <button id="restart-btn" class="btn">Restart Game</button>
             </header>
 
-            <div class="game-controls">
-                <div class="difficulty-selector">
-                    <button class="diff-btn active" data-grid="4">4x4 Grid</button>
-                    <button class="diff-btn" data-grid="6">6x6 Grid</button>
-                </div>
-                <button id="restart-btn" class="btn reset-btn">Restart Game</button>
-            </div>
-
-            <main class="grid-container" id="memory-grid">
-                <!-- Cards injected by JS -->
+            <main class="grid-container" id="grid">
+                <!-- Cards will be generated by JS -->
             </main>
-        </section>
-
-        <!-- GOMOKU (CARO) VIEW -->
-        <section id="caro-view" class="view-section hidden">
-            <header class="game-header">
-                <button class="back-btn btn secondary-btn">⬅ Lobby</button>
-                <h2>Cờ Caro</h2>
-                <div class="turn-box">
-                    <span id="caro-turn-display">X's Turn</span>
+        </div>
+        
+        <div class="modal-overlay" id="win-modal">
+            <div class="modal-content">
+                <h2>Level Cleared! 🎉</h2>
+                <p>You completed the level in <strong id="final-moves">0</strong> moves and <strong id="final-time">0:00</strong>.</p>
+                <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 1.5rem;">
+                    <button id="play-again-btn" class="btn">Restart Level</button>
+                    <button id="next-level-btn" class="btn primary-btn">Next Level</button>
                 </div>
-            </header>
-
-            <div class="game-controls flex-controls">
-                <div class="control-group">
-                    <label for="caro-mode">Mode:</label>
-                    <select id="caro-mode" class="glass-select">
-                        <option value="pvp">Player vs Player</option>
-                        <option value="pve">Player vs AI</option>
-                    </select>
-                </div>
-                
-                <div class="control-group">
-                    <label for="caro-symbol">Symbol:</label>
-                    <select id="caro-symbol" class="glass-select">
-                        <option value="X">Play as X</option>
-                        <option value="O">Play as O</option>
-                    </select>
-                </div>
-
-                <div class="button-group">
-                    <button id="caro-undo-btn" class="btn secondary-btn">Undo</button>
-                    <button id="caro-reset-btn" class="btn reset-btn">Reset</button>
-                </div>
-            </div>
-
-            <div class="caro-board-container">
-                <div class="caro-board" id="caro-board">
-                    <!-- 15x15 Cells injected by JS -->
-                </div>
-            </div>
-        </section>
-
-        <!-- Dummy 2048 View (for test compatibility) -->
-        <section id="g2048-view" class="view-section hidden">
-            <header class="game-header">
-                <button class="back-btn btn secondary-btn">⬅ Lobby</button>
-                <h2>2048</h2>
-            </header>
-        </section>
-    </div>
-
-    <!-- GLOBAL MODAL OVERLAY -->
-    <div class="modal-overlay" id="global-modal">
-        <div class="modal-content glass-card">
-            <h2 id="global-modal-title">Level Cleared! 🎉</h2>
-            <p id="global-modal-message">You completed the game!</p>
-            <div class="modal-buttons">
-                <button id="global-modal-cancel" class="btn secondary-btn">Cancel</button>
-                <button id="global-modal-confirm" class="btn primary-btn">Confirm</button>
             </div>
         </div>
     </div>
 
-    <!-- TOAST NOTIFICATION CONTAINER -->
-    <div id="notification-container" class="toast-container"></div>
+    <!-- Tic Tac Toe View -->
+    <div id="tictactoe-view" class="view-container hidden">
+        <div class="game-container ttt-container">
+            <header class="ttt-header">
+                <div class="header-nav">
+                    <button class="back-to-lobby-btn btn">← Back to Lobby</button>
+                </div>
+                <h1 class="ttt-title">Tic Tac Toe</h1>
+                
+                <!-- Game Configuration -->
+                <div class="ttt-config glass-card">
+                    <div class="config-group">
+                        <span class="config-label">Mode:</span>
+                        <div class="segmented-control">
+                            <button id="mode-pvp-btn" class="segment-btn active">PvP</button>
+                            <button id="mode-pve-btn" class="segment-btn">PvE (AI)</button>
+                        </div>
+                    </div>
+                    <div id="ai-difficulty-group" class="config-group hidden">
+                        <span class="config-label">AI Level:</span>
+                        <div class="segmented-control">
+                            <button id="diff-easy-btn" class="segment-btn active">Easy</button>
+                            <button id="diff-hard-btn" class="segment-btn">Unbeatable</button>
+                        </div>
+                    </div>
+                </div>
 
-    <!-- SCRIPTS -->
+                <!-- Match Scoreboard -->
+                <div class="stats ttt-stats">
+                    <div class="stat-box">
+                        <span class="label" id="lbl-player-x">Player X</span>
+                        <span class="value" id="ttt-score-x">0</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="label">Draws</span>
+                        <span class="value" id="ttt-score-draws">0</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="label" id="lbl-player-o">Player O</span>
+                        <span class="value" id="ttt-score-o">0</span>
+                    </div>
+                </div>
+
+                <!-- Turn Status -->
+                <div class="ttt-status-bar glass-card">
+                    <span id="ttt-status">Player X's Turn</span>
+                </div>
+            </header>
+
+            <main class="ttt-grid" id="ttt-board">
+                <div class="ttt-cell" data-index="0"></div>
+                <div class="ttt-cell" data-index="1"></div>
+                <div class="ttt-cell" data-index="2"></div>
+                <div class="ttt-cell" data-index="3"></div>
+                <div class="ttt-cell" data-index="4"></div>
+                <div class="ttt-cell" data-index="5"></div>
+                <div class="ttt-cell" data-index="6"></div>
+                <div class="ttt-cell" data-index="7"></div>
+                <div class="ttt-cell" data-index="8"></div>
+            </main>
+
+            <footer class="ttt-controls">
+                <button id="ttt-undo-btn" class="btn" disabled>↩ Undo</button>
+                <button id="ttt-restart-btn" class="btn primary-btn gold-btn">🔄 Restart Match</button>
+                <button id="ttt-clear-btn" class="btn danger-btn">🗑️ Clear Score</button>
+            </footer>
+        </div>
+    </div>
+
+    <!-- Central navigation script -->
     <script src="main.js"></script>
-    <script src="js/games/match.js"></script>
-    <script src="js/games/caro.js"></script>
+    <!-- Game specific scripts -->
+    <script src="tictactoe.js"></script>
 </body>
 </html>
