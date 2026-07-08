@@ -1,5 +1,5 @@
 const allEmojis = ['🚀', '🛸', '🛰️', '🪐', '☄️', '🌌', '👨‍🚀', '👽', '🌎', '⭐', '🌞', '🌙', '🌠', '🌩️', '☀️', '☁️', '❄️', '🔥'];
-let currentLevel = 1;
+let currentLevel = parseInt(localStorage.getItem('memory_match_level')) || 1;
 let currentEmojis = [];
 let cards = [];
 let flippedCards = [];
@@ -177,6 +177,7 @@ function resetGame() {
 
 restartBtn.addEventListener('click', () => {
     currentLevel = 1;
+    localStorage.setItem('memory_match_level', currentLevel);
     currentLevelDisplay.textContent = currentLevel;
     resetGame();
 });
@@ -187,9 +188,65 @@ playAgainBtn.addEventListener('click', () => {
 
 nextLevelBtn.addEventListener('click', () => {
     currentLevel++;
+    localStorage.setItem('memory_match_level', currentLevel);
     currentLevelDisplay.textContent = currentLevel;
     resetGame();
 });
 
-// Initialize game
-createBoard();
+function updateLobbyStats() {
+    // Memory match stats
+    const memoryLevel = localStorage.getItem('memory_match_level') || '1';
+    document.getElementById('lobby-memory-level').textContent = memoryLevel;
+    document.getElementById('current-level').textContent = memoryLevel;
+    
+    // Tic tac toe stats
+    const pvpWins = parseInt(localStorage.getItem('ttt_pvp_x_wins') || '0') + parseInt(localStorage.getItem('ttt_pvp_o_wins') || '0');
+    const pveWins = parseInt(localStorage.getItem('ttt_pve_player_wins') || '0');
+    document.getElementById('lobby-ttt-pvp-wins').textContent = pvpWins;
+    document.getElementById('lobby-ttt-pve-wins').textContent = pveWins;
+}
+
+// Make updateLobbyStats globally accessible
+window.updateLobbyStats = updateLobbyStats;
+
+// Setup SPA navigation
+document.addEventListener('DOMContentLoaded', () => {
+    updateLobbyStats();
+    
+    const lobbyView = document.getElementById('lobby-view');
+    const memoryMatchView = document.getElementById('memory-match-view');
+    const tictactoeView = document.getElementById('tictactoe-view');
+    
+    const playMemoryCard = document.getElementById('play-memory-card');
+    const playTictactoeCard = document.getElementById('play-tictactoe-card');
+    
+    const memoryBackBtn = document.getElementById('memory-back-btn');
+    const tttBackBtn = document.getElementById('ttt-back-btn');
+    
+    playMemoryCard.addEventListener('click', () => {
+        lobbyView.classList.add('hidden');
+        memoryMatchView.classList.remove('hidden');
+        resetGame();
+    });
+    
+    playTictactoeCard.addEventListener('click', () => {
+        lobbyView.classList.add('hidden');
+        tictactoeView.classList.remove('hidden');
+        if (window.initTicTacToe) {
+            window.initTicTacToe();
+        }
+    });
+    
+    memoryBackBtn.addEventListener('click', () => {
+        stopTimer();
+        memoryMatchView.classList.add('hidden');
+        lobbyView.classList.remove('hidden');
+        updateLobbyStats();
+    });
+    
+    tttBackBtn.addEventListener('click', () => {
+        tictactoeView.classList.add('hidden');
+        lobbyView.classList.remove('hidden');
+        updateLobbyStats();
+    });
+});
