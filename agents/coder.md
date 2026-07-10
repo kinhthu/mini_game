@@ -31,3 +31,4 @@ Bạn là **kỹ sư phần mềm** triển khai **đúng một task item** tạ
 - KHÔNG viết code chứa vòng lặp vô hạn (while(true), for(;;)) mà không có điều kiện thoát cứng, giới hạn số lượt lặp tối đa, hoặc kiểm tra `CancellationToken`.
 - TUYỆT ĐỐI KHÔNG sử dụng các lệnh chặn tương tác (blocking I/O) như `Console.ReadLine()` hay `Console.ReadKey()` trong mã nguồn hoặc Unit Tests.
 - KHÔNG khởi tạo/sử dụng HttpClient mà không thiết lập `Timeout` hợp lý.
+- TUYỆT ĐỐI KHÔNG đọc, ghi, tìm kiếm hoặc thao tác trên bất kỳ tệp tin nào nằm ngoài thư mục Workspace hiện tại của dự án (ví dụ: không dùng đường dẫn tuyệt đối hoặc tương đối trỏ ra ngoài Workspace để đọc/ghi file của dự án khác).

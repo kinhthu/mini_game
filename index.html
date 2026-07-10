@@ -75,6 +75,18 @@
                 </div>
                 <button id="play-caro-btn" class="btn primary-btn purple-btn">Play Now</button>
             </div>
+
+            <!-- Cờ Cá Ngựa Card -->
+            <div class="game-card glass-card cangua-theme">
+                <div class="game-icon">🐎</div>
+                <h3 class="game-title">Cờ Cá Ngựa</h3>
+                <p class="game-desc">Đua ngựa kỳ thú cùng bạn bè hoặc thử thách AI thông minh.</p>
+                <div class="game-stats">
+                    <span>Wins: <strong id="stats-cangua-wins">0</strong></span>
+                    <span>Played: <strong id="stats-cangua-played">0</strong></span>
+                </div>
+                <button id="play-cangua-btn" class="btn primary-btn blue-btn">Play Now</button>
+            </div>
         </main>
     </div>
 
@@ -246,11 +258,102 @@
         </div>
     </div>
 
+    <!-- Cờ Cá Ngựa View -->
+    <div id="cangua-view" class="view-container hidden">
+        <div class="game-container cangua-container">
+            <header class="cangua-header">
+                <div class="header-nav">
+                    <button class="back-to-lobby-btn btn">← Back to Lobby</button>
+                </div>
+                <h1 class="cangua-title">Cờ Cá Ngựa</h1>
+                
+                <!-- Game Configuration -->
+                <div class="cangua-config glass-card">
+                    <div class="config-group">
+                        <span class="config-label">Chế độ:</span>
+                        <div class="segmented-control">
+                            <button id="cangua-mode-pvp-btn" class="segment-btn active">PvP</button>
+                            <button id="cangua-mode-pve-btn" class="segment-btn">Chơi với Máy (AI)</button>
+                        </div>
+                    </div>
+                    <div id="cangua-players-group" class="config-group">
+                        <span class="config-label">Số người chơi:</span>
+                        <div class="segmented-control">
+                            <button id="cangua-players-2-btn" class="segment-btn active">2</button>
+                            <button id="cangua-players-3-btn" class="segment-btn">3</button>
+                            <button id="cangua-players-4-btn" class="segment-btn">4</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Match Scoreboard -->
+                <div class="stats cangua-stats">
+                    <div class="stat-box red-status">
+                        <span class="label">Đỏ (P1)</span>
+                        <span class="value" id="cangua-score-red">0</span>
+                    </div>
+                    <div class="stat-box green-status">
+                        <span class="label">Lá (P2)</span>
+                        <span class="value" id="cangua-score-green">0</span>
+                    </div>
+                    <div class="stat-box yellow-status">
+                        <span class="label">Vàng (P3)</span>
+                        <span class="value" id="cangua-score-yellow">0</span>
+                    </div>
+                    <div class="stat-box blue-status">
+                        <span class="label">Dương (P4)</span>
+                        <span class="value" id="cangua-score-blue">0</span>
+                    </div>
+                </div>
+
+                <!-- Turn Status -->
+                <div class="cangua-status-bar glass-card">
+                    <span id="cangua-status">Lượt của Đỏ (Tung xúc xắc)</span>
+                </div>
+            </header>
+
+            <main class="cangua-board-wrapper">
+                <div id="cangua-board" class="cangua-grid">
+                    <!-- Grid cells will be generated dynamically by JS -->
+                </div>
+            </main>
+
+            <footer class="cangua-controls">
+                <div class="dice-section">
+                    <div id="dice-container" class="dice-container">
+                        <div class="dice" id="dice-1">
+                            <div class="face front">1</div>
+                            <div class="face back">6</div>
+                            <div class="face right">2</div>
+                            <div class="face left">5</div>
+                            <div class="face top">3</div>
+                            <div class="face bottom">4</div>
+                        </div>
+                        <div class="dice" id="dice-2">
+                            <div class="face front">1</div>
+                            <div class="face back">6</div>
+                            <div class="face right">2</div>
+                            <div class="face left">5</div>
+                            <div class="face top">3</div>
+                            <div class="face bottom">4</div>
+                        </div>
+                    </div>
+                    <button id="cangua-roll-btn" class="btn primary-btn blue-btn">🎲 Tung Xúc Xắc</button>
+                </div>
+                <div class="action-buttons">
+                    <button id="cangua-restart-btn" class="btn primary-btn blue-btn">🔄 Restart Match</button>
+                    <button id="cangua-clear-btn" class="btn danger-btn">🗑️ Clear Score</button>
+                </div>
+            </footer>
+        </div>
+    </div>
+
     <!-- Central navigation script -->
     <script src="js/main.js"></script>
     <!-- Game specific scripts -->
     <script src="js/games/match.js"></script>
     <script src="js/games/tictactoe.js"></script>
     <script src="js/games/caro.js"></script>
+    <script src="js/games/cangua.js"></script>
 </body>
 </html>

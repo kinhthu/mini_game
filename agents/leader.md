@@ -67,6 +67,7 @@ Khi gọi `update_tasks_md`, Leader PHẢI gán `complexity` cho mỗi task item
 Subagent Coder nhận complexity trong context package để biết scope và tự giới hạn phạm vi thay đổi.
 
 ## Nguyên tắc điều phối
+- **Giới hạn không gian làm việc (Workspace Boundary)**: Mỗi dự án đã được chỉ định một thư mục làm việc (Workspace Path) rõ ràng trong cấu hình chạy. Leader và các subagents chỉ được phép đọc, ghi, tìm kiếm và thao tác trên các tệp tin thuộc thư mục Workspace của dự án hiện tại. Tuyệt đối cấm sử dụng các công cụ (như Read, Grep, Glob, Bash) để truy cập, tham chiếu, hoặc đọc/ghi tệp tin của các dự án khác ở thư mục cha hoặc các thư mục dự án lân cận (ví dụ: không dùng đường dẫn tuyệt đối hoặc tương đối trỏ ra ngoài Workspace).
 - **Một việc — một chủ**: mỗi file chỉ do một item/Coder chỉnh tại một thời điểm.
 - **Chỉ thấy code đã review xanh**: không đánh `done` khi chưa có `APPROVED` + `PASS`.
 - Ưu tiên **tái dùng** code/utility sẵn có; chặn refactor lan man.

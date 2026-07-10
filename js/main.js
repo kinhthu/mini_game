@@ -26,7 +26,8 @@ const ProfileManager = {
                         parseInt(localStorage.getItem('ttt_pvp_wins') || '0', 10);
         const caroWins = parseInt(localStorage.getItem('caro_pve_wins') || '0', 10) +
                          parseInt(localStorage.getItem('caro_pvp_wins') || '0', 10);
-        const totalWins = memoryWins + tttWins + caroWins;
+        const canguaWins = parseInt(localStorage.getItem('cangua_wins') || '0', 10);
+        const totalWins = memoryWins + tttWins + caroWins + canguaWins;
         if (rankEl) rankEl.textContent = this.getRank(totalWins);
 
         // Update Lobby stats
@@ -35,8 +36,9 @@ const ProfileManager = {
                           parseInt(localStorage.getItem('ttt_pvp_played') || '0', 10);
         const caroPlayed = parseInt(localStorage.getItem('caro_pve_played') || '0', 10) +
                            parseInt(localStorage.getItem('caro_pvp_played') || '0', 10);
+        const canguaPlayed = parseInt(localStorage.getItem('cangua_played') || '0', 10);
         
-        const totalPlayed = memoryPlayed + tttPlayed + caroPlayed;
+        const totalPlayed = memoryPlayed + tttPlayed + caroPlayed + canguaPlayed;
         const globalPlayedEl = document.getElementById('global-played');
         if (globalPlayedEl) globalPlayedEl.textContent = totalPlayed;
 
@@ -71,6 +73,12 @@ const ProfileManager = {
                           parseInt(localStorage.getItem('caro_pvp_draws') || '0', 10);
             caroDrawsEl.textContent = draws;
         }
+
+        // Update Cờ Cá Ngựa specific stats on Lobby
+        const canguaWinsEl = document.getElementById('stats-cangua-wins');
+        if (canguaWinsEl) canguaWinsEl.textContent = canguaWins;
+        const canguaPlayedEl = document.getElementById('stats-cangua-played');
+        if (canguaPlayedEl) canguaPlayedEl.textContent = canguaPlayed;
     }
 };
 
@@ -125,6 +133,16 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    const playCanguaBtn = document.getElementById('play-cangua-btn');
+    if (playCanguaBtn) {
+        playCanguaBtn.addEventListener('click', () => {
+            GameHub.showView('cangua-view');
+            if (window.CanGuaGame) {
+                window.CanGuaGame.init();
+            }
+        });
+    }
+
     document.querySelectorAll('.back-to-lobby-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             // Stop timers/games if applicable
@@ -133,6 +151,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             if (window.CaroGame) {
                 window.CaroGame.reset();
+            }
+            if (window.CanGuaGame) {
+                window.CanGuaGame.reset();
             }
             GameHub.showView('lobby-view');
         });

@@ -35,3 +35,4 @@ Biến input (mô tả ngắn hoặc plan `.md`) thành một **plan kỹ thuậ
 - KHÔNG viết code triển khai / sửa file nguồn.
 - KHÔNG đề xuất tạo mới khi đã có implementation phù hợp trong repo.
 - KHÔNG bỏ qua non-functional (bảo mật/hiệu năng) khi liên quan.
+- TUYỆT ĐỐI KHÔNG đọc, ghi, tìm kiếm hoặc thao tác trên bất kỳ tệp tin nào nằm ngoài thư mục Workspace hiện tại của dự án (ví dụ: không dùng đường dẫn tuyệt đối hoặc tương đối trỏ ra ngoài Workspace để đọc file của dự án khác như Mini-Games).
