@@ -56,8 +56,13 @@ const CanGuaGame = {
     highlightedTargets: [], // Array of { cellType, pos, x, y, spendMoves }
     isGameOver: false,
     aiTimer: null,
+    initialized: false,
 
     init() {
+        if (this.initialized) {
+            this.reset();
+            return;
+        }
         this.resetState();
         this.bindEvents();
         this.loadSettings();
@@ -72,15 +77,19 @@ const CanGuaGame = {
 
         // Check if first player is AI and start turn
         this.checkAiTurn();
+        this.initialized = true;
     },
 
-    reset() {
+    reset(startAi = true) {
         this.resetState();
         this.setupPlayers();
         this.initHorses();
+        if (!this.initialized) return;
         this.drawBoard();
         this.updateUI();
-        this.checkAiTurn();
+        if (startAi) {
+            this.checkAiTurn();
+        }
     },
 
     resetState() {

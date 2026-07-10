@@ -146,15 +146,38 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.back-to-lobby-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             // Stop timers/games if applicable
-            if (window.MemoryMatch) {
-                window.MemoryMatch.stopTimer();
+            try {
+                if (window.MemoryMatch) {
+                    window.MemoryMatch.stopTimer();
+                }
+            } catch (e) {
+                console.error("Error stopping MemoryMatch timer:", e);
             }
-            if (window.CaroGame) {
-                window.CaroGame.reset();
+
+            try {
+                if (window.CaroGame && window.CaroGame.initialized) {
+                    window.CaroGame.reset();
+                }
+            } catch (e) {
+                console.error("Error resetting CaroGame:", e);
             }
-            if (window.CanGuaGame) {
-                window.CanGuaGame.reset();
+
+            try {
+                if (window.CanGuaGame && window.CanGuaGame.initialized) {
+                    window.CanGuaGame.reset(false);
+                }
+            } catch (e) {
+                console.error("Error resetting CanGuaGame:", e);
             }
+
+            try {
+                if (window.TicTacToeGame && window.TicTacToeGame.initialized) {
+                    window.TicTacToeGame.resetMatch();
+                }
+            } catch (e) {
+                console.error("Error resetting TicTacToeGame:", e);
+            }
+
             GameHub.showView('lobby-view');
         });
     });

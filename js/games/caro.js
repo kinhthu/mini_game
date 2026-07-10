@@ -189,6 +189,8 @@
             this.isGameOver = false;
             this.isAiMoving = false;
             
+            if (!this.initialized) return;
+            
             const cells = this.boardEl.querySelectorAll('.caro-cell');
             cells.forEach(cell => {
                 cell.className = cell.classList.contains('star-point') ? 'caro-cell star-point' : 'caro-cell';

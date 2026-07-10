@@ -7,6 +7,8 @@
         history: [],        // stack of states for undo: each element is { board: [...], currentPlayer }
         isGameOver: false,
         isAiMoving: false,
+        initialized: false,
+        aiTimeout: null,
 
         // Winning combinations
         winCombos: [
@@ -16,6 +18,10 @@
         ],
 
         init() {
+            if (this.initialized) {
+                this.resetMatch();
+                return;
+            }
             this.board = Array(9).fill(null);
             this.currentPlayer = 'X';
             this.history = [];
@@ -69,6 +75,7 @@
             this.updateLabels();
             this.loadScores();
             this.resetBoard();
+            this.initialized = true;
         },
 
         updateConfigUI() {
@@ -181,12 +188,19 @@
         },
 
         resetBoard() {
+            if (this.aiTimeout) {
+                clearTimeout(this.aiTimeout);
+                this.aiTimeout = null;
+            }
             this.board = Array(9).fill(null);
             this.currentPlayer = 'X';
             this.history = [];
             this.isGameOver = false;
             this.isAiMoving = false;
-            this.undoBtn.disabled = true;
+            
+            if (!this.cells) return;
+            
+            if (this.undoBtn) this.undoBtn.disabled = true;
 
             this.cells.forEach(cell => {
                 cell.textContent = '';
@@ -260,7 +274,7 @@
             this.isAiMoving = true;
             this.statusEl.textContent = 'AI is thinking...';
 
-            setTimeout(() => {
+            this.aiTimeout = setTimeout(() => {
                 if (this.isGameOver) {
                     this.isAiMoving = false;
                     return;
@@ -270,6 +284,7 @@
                     this.makeMove(bestMove, 'O');
                 }
                 this.isAiMoving = false;
+                this.aiTimeout = null;
             }, 500);
         },
 

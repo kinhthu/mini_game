@@ -18,6 +18,7 @@
 - **Artificial Delay**: Implemented a 300ms delay for Caro AI moves, a 500ms delay for Tic Tac Toe AI moves, and an 800ms delay for Cờ Cá Ngựa AI actions with status label feedback to ensure a natural gameplay flow.
 - **Multi-step Undo**: Designed undo stacks supporting 1-step undo in PvP and 2-step undo in PvE to cleanly revert both AI and player moves.
 - **Reconstructed Directory Layout**: Refactored scripts into clean subdirectories (`js/` and `js/games/`) to logically separate navigation logic and game engines.
+- **Lobby Navigation & Timer Safety**: Guarded the reset processes of game controllers (`Caro`, `Ludo`, `TicTacToe`) with initialization flags and individual try-catch blocks to prevent errors from uninitialized DOM elements and prevent background AI execution when returning to the lobby.
 
 ## Key Files Map
 - `index.html`: Holds the DOM views for the Lobby, Memory Match, Tic Tac Toe, Caro, and Cờ Cá Ngựa.
@@ -56,3 +57,5 @@ Standard browser-based event-driven API and HTML5 LocalStorage interface.
 - **UI Locking**: In PvE, board clicks must be disabled when AI is thinking (`isAiMoving = true`) to prevent race conditions.
 - **Heuristic Weights**: The Caro AI weights must scale with the length of the matching run, prioritizing winning moves (5-in-a-row) and open-four threats over simple three-in-a-row blocks.
 - **Safe DOM Text Value Parsing**: Parsing DOM elements (e.g. textContent) under Node.js testing requires strict safeguards (handling NaN and undefined objects) due to missing real DOM properties in simple test mocks.
+- **Uninitialized DOM Controllers**: When implementing SPA view switching, calling cleanups/resets on all pages during transitions can trigger exceptions if a page has never been opened. Always gate cleanups behind an `initialized` flag or wrap them in individual `try...catch` blocks to protect navigation flows.
+- **Leaking Async Timers**: When navigating away from a game view, any scheduled AI timeout or async loop must be explicitly cleared to prevent background executions that might corrupt state or throw exceptions when elements disappear.
