@@ -99,6 +99,18 @@
                 </div>
                 <button id="play-chess-btn" class="btn primary-btn green-btn">Play Now</button>
             </div>
+
+            <!-- Cờ Tướng Card -->
+            <div class="game-card glass-card tuong-theme">
+                <div class="game-icon">⛩️</div>
+                <h3 class="game-title">Cờ Tướng</h3>
+                <p class="game-desc">Trải nghiệm cờ Tướng truyền thống. Thách thức AI minimax thông minh hoặc đấu trí cùng bạn bè.</p>
+                <div class="game-stats">
+                    <span>Wins: <strong id="stats-tuong-wins">0</strong></span>
+                    <span>Played: <strong id="stats-tuong-played">0</strong></span>
+                </div>
+                <button id="play-tuong-btn" class="btn primary-btn red-btn">Play Now</button>
+            </div>
         </main>
     </div>
 
@@ -437,6 +449,69 @@
         </div>
     </div>
 
+    <!-- Cờ Tướng View -->
+    <div id="tuong-view" class="view-container hidden">
+        <div class="game-container tuong-container">
+            <header class="tuong-header">
+                <div class="header-nav">
+                    <button class="back-to-lobby-btn btn">← Back to Lobby</button>
+                </div>
+                <h1 class="tuong-title">Cờ Tướng</h1>
+                
+                <!-- Game Configuration -->
+                <div class="tuong-config glass-card">
+                    <div class="config-group">
+                        <span class="config-label">Chế độ:</span>
+                        <div class="segmented-control">
+                            <button id="tuong-mode-pvp-btn" class="segment-btn active">PvP</button>
+                            <button id="tuong-mode-pve-btn" class="segment-btn">PvE (AI)</button>
+                        </div>
+                    </div>
+                    <div id="tuong-ai-difficulty-group" class="config-group hidden">
+                        <span class="config-label">Độ khó:</span>
+                        <div class="segmented-control">
+                            <button id="tuong-diff-easy-btn" class="segment-btn active">Dễ</button>
+                            <button id="tuong-diff-hard-btn" class="segment-btn">Khó (AI)</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Match Scoreboard -->
+                <div class="stats tuong-stats">
+                    <div class="stat-box">
+                        <span class="label" id="tuong-lbl-player-red">Đỏ (P1)</span>
+                        <span class="value" id="tuong-score-red">0</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="label">Hòa</span>
+                        <span class="value" id="tuong-score-draws">0</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="label" id="tuong-lbl-player-black">Đen (P2/AI)</span>
+                        <span class="value" id="tuong-score-black">0</span>
+                    </div>
+                </div>
+
+                <!-- Turn Status -->
+                <div class="tuong-status-bar glass-card">
+                    <span id="tuong-status">Lượt của Đỏ</span>
+                </div>
+            </header>
+
+            <main class="tuong-board-wrapper">
+                <div id="tuong-board" class="tuong-grid">
+                    <!-- Grid cells will be generated dynamically by JS -->
+                </div>
+            </main>
+
+            <footer class="tuong-controls">
+                <button id="tuong-undo-btn" class="btn" disabled>↩ Undo</button>
+                <button id="tuong-restart-btn" class="btn primary-btn red-btn">🔄 Restart Match</button>
+                <button id="tuong-clear-btn" class="btn danger-btn">🗑️ Clear Score</button>
+            </footer>
+        </div>
+    </div>
+
     <!-- Central navigation script -->
     <script src="js/main.js"></script>
     <!-- Game specific scripts -->
@@ -445,5 +520,6 @@
     <script src="js/games/caro.js"></script>
     <script src="js/games/cangua.js"></script>
     <script src="js/games/chess.js"></script>
+    <script src="js/games/tuong.js"></script>
 </body>
 </html>
