@@ -87,6 +87,18 @@
                 </div>
                 <button id="play-cangua-btn" class="btn primary-btn blue-btn">Play Now</button>
             </div>
+
+            <!-- Chess (Cờ Vua) Card -->
+            <div class="game-card glass-card chess-theme">
+                <div class="game-icon">👑</div>
+                <h3 class="game-title">Cờ Vua</h3>
+                <p class="game-desc">Trải nghiệm cờ Vua kinh điển với đầy đủ luật chơi. Thách thức AI thông minh.</p>
+                <div class="game-stats">
+                    <span>Wins: <strong id="stats-chess-wins">0</strong></span>
+                    <span>Played: <strong id="stats-chess-played">0</strong></span>
+                </div>
+                <button id="play-chess-btn" class="btn primary-btn green-btn">Play Now</button>
+            </div>
         </main>
     </div>
 
@@ -348,6 +360,83 @@
         </div>
     </div>
 
+    <!-- Chess View -->
+    <div id="chess-view" class="view-container hidden">
+        <div class="game-container chess-container">
+            <header class="chess-header">
+                <div class="header-nav">
+                    <button class="back-to-lobby-btn btn">← Back to Lobby</button>
+                </div>
+                <h1 class="chess-title">Cờ Vua</h1>
+                
+                <!-- Game Configuration -->
+                <div class="chess-config glass-card">
+                    <div class="config-group">
+                        <span class="config-label">Chế độ:</span>
+                        <div class="segmented-control">
+                            <button id="chess-mode-pvp-btn" class="segment-btn active">PvP</button>
+                            <button id="chess-mode-pve-btn" class="segment-btn">PvE (AI)</button>
+                        </div>
+                    </div>
+                    <div id="chess-ai-difficulty-group" class="config-group hidden">
+                        <span class="config-label">Độ khó:</span>
+                        <div class="segmented-control">
+                            <button id="chess-diff-easy-btn" class="segment-btn active">Easy</button>
+                            <button id="chess-diff-hard-btn" class="segment-btn">Hard (AI)</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Match Scoreboard -->
+                <div class="stats chess-stats">
+                    <div class="stat-box">
+                        <span class="label" id="chess-lbl-player-white">Trắng (P1)</span>
+                        <span class="value" id="chess-score-white">0</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="label">Hòa</span>
+                        <span class="value" id="chess-score-draws">0</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="label" id="chess-lbl-player-black">Đen (P2)</span>
+                        <span class="value" id="chess-score-black">0</span>
+                    </div>
+                </div>
+
+                <!-- Turn Status -->
+                <div class="chess-status-bar glass-card">
+                    <span id="chess-status">Lượt của Trắng</span>
+                </div>
+            </header>
+
+            <main class="chess-board-wrapper">
+                <div id="chess-board" class="chess-grid">
+                    <!-- Grid cells will be generated dynamically by JS -->
+                </div>
+            </main>
+
+            <footer class="chess-controls">
+                <button id="chess-undo-btn" class="btn" disabled>↩ Undo</button>
+                <button id="chess-restart-btn" class="btn primary-btn green-btn">🔄 Restart Match</button>
+                <button id="chess-clear-btn" class="btn danger-btn">🗑️ Clear Score</button>
+            </footer>
+        </div>
+
+        <!-- Pawn Promotion Modal dialog -->
+        <div class="modal-overlay" id="chess-promotion-modal">
+            <div class="modal-content">
+                <h2>Phong Cấp Tốt 👑</h2>
+                <p>Chọn quân cờ bạn muốn nâng cấp:</p>
+                <div class="promotion-options">
+                    <button class="btn promotion-btn" data-piece="Q">♛ Hậu (Queen)</button>
+                    <button class="btn promotion-btn" data-piece="R">♜ Xe (Rook)</button>
+                    <button class="btn promotion-btn" data-piece="B">♝ Tượng (Bishop)</button>
+                    <button class="btn promotion-btn" data-piece="N">♞ Mã (Knight)</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Central navigation script -->
     <script src="js/main.js"></script>
     <!-- Game specific scripts -->
@@ -355,5 +444,6 @@
     <script src="js/games/tictactoe.js"></script>
     <script src="js/games/caro.js"></script>
     <script src="js/games/cangua.js"></script>
+    <script src="js/games/chess.js"></script>
 </body>
 </html>

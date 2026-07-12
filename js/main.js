@@ -27,7 +27,8 @@ const ProfileManager = {
         const caroWins = parseInt(localStorage.getItem('caro_pve_wins') || '0', 10) +
                          parseInt(localStorage.getItem('caro_pvp_wins') || '0', 10);
         const canguaWins = parseInt(localStorage.getItem('cangua_wins') || '0', 10);
-        const totalWins = memoryWins + tttWins + caroWins + canguaWins;
+        const chessWins = parseInt(localStorage.getItem('chess_wins') || '0', 10);
+        const totalWins = memoryWins + tttWins + caroWins + canguaWins + chessWins;
         if (rankEl) rankEl.textContent = this.getRank(totalWins);
 
         // Update Lobby stats
@@ -37,8 +38,9 @@ const ProfileManager = {
         const caroPlayed = parseInt(localStorage.getItem('caro_pve_played') || '0', 10) +
                            parseInt(localStorage.getItem('caro_pvp_played') || '0', 10);
         const canguaPlayed = parseInt(localStorage.getItem('cangua_played') || '0', 10);
+        const chessPlayed = parseInt(localStorage.getItem('chess_played') || '0', 10);
         
-        const totalPlayed = memoryPlayed + tttPlayed + caroPlayed + canguaPlayed;
+        const totalPlayed = memoryPlayed + tttPlayed + caroPlayed + canguaPlayed + chessPlayed;
         const globalPlayedEl = document.getElementById('global-played');
         if (globalPlayedEl) globalPlayedEl.textContent = totalPlayed;
 
@@ -79,6 +81,12 @@ const ProfileManager = {
         if (canguaWinsEl) canguaWinsEl.textContent = canguaWins;
         const canguaPlayedEl = document.getElementById('stats-cangua-played');
         if (canguaPlayedEl) canguaPlayedEl.textContent = canguaPlayed;
+
+        // Update Chess specific stats on Lobby
+        const chessWinsEl = document.getElementById('stats-chess-wins');
+        if (chessWinsEl) chessWinsEl.textContent = chessWins;
+        const chessPlayedEl = document.getElementById('stats-chess-played');
+        if (chessPlayedEl) chessPlayedEl.textContent = chessPlayed;
     }
 };
 
@@ -143,6 +151,16 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    const playChessBtn = document.getElementById('play-chess-btn');
+    if (playChessBtn) {
+        playChessBtn.addEventListener('click', () => {
+            GameHub.showView('chess-view');
+            if (window.ChessGame) {
+                window.ChessGame.init();
+            }
+        });
+    }
+
     document.querySelectorAll('.back-to-lobby-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             // Stop timers/games if applicable
@@ -176,6 +194,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             } catch (e) {
                 console.error("Error resetting TicTacToeGame:", e);
+            }
+
+            try {
+                if (window.ChessGame && window.ChessGame.initialized) {
+                    window.ChessGame.reset();
+                }
+            } catch (e) {
+                console.error("Error resetting ChessGame:", e);
             }
 
             GameHub.showView('lobby-view');
