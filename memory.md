@@ -6,8 +6,10 @@
 ## Tech Stack
 - HTML5 (Structure)
 - CSS3 (Vanilla styles, Glassmorphism, Neon gold/cyan/coral/purple/blue/green glow)
+- SVG (Dynamic laser path overlay drawing)
 - JavaScript (Vanilla ES6, client-side SPA routing)
 - Node.js (Unit test suite execution)
+
 
 ## Key Architecture Decisions
 - **SPA Architecture**: Converted the single-view Memory Match page into a multi-game SPA controlled by `GameHub` showing/hiding view containers (`#lobby-view`, `#memory-match-view`, `#tictactoe-view`, `#caro-view`, `#cangua-view`, `#chess-view`, `#tuong-view`).
@@ -21,7 +23,9 @@
 - **Artificial Delay**: Implemented delay timers for Caro AI (300ms), Tic Tac Toe AI (500ms), Ludo AI (800ms), Chess AI (700ms/400ms), and Cờ Tướng AI (600ms/800ms) with status label feedback to ensure a natural gameplay flow.
 - **Multi-step Undo**: Designed undo stacks supporting 1-step undo in PvP and 2-step undo in PvE to cleanly revert both AI and player moves.
 - **Reconstructed Directory Layout**: Refactored scripts into clean subdirectories (`js/` and `js/games/`) to logically separate navigation logic and game engines.
-- **Lobby Navigation & Timer Safety**: Guarded the reset processes of game controllers (`Caro`, `Ludo`, `TicTacToe`, `Chess`, `TuongGame`) with initialization flags and individual try-catch blocks to prevent errors from uninitialized DOM elements and prevent background AI execution when returning to the lobby.
+- **Lobby Navigation & Timer Safety**: Guarded the reset processes of game controllers (`Caro`, `Ludo`, `TicTacToe`, `Chess`, `TuongGame`, `OnetConnect`) with initialization flags and individual try-catch blocks to prevent errors from uninitialized DOM elements and prevent background AI execution when returning to the lobby.
+- **Onet Connect (Pokemon Match) Game Integration**: Added Onet Connect with a dynamic grid layout padded by an empty boundary row and column (`H+2 x W+2`) to route lines around outer edges. Implemented a 2-turn maximum horizontal and vertical scan pathfinding algorithm (`findLink`), neon SVG path laser drawing, manual shuffles, auto-shuffles to prevent soft-locks, and countdown timers.
+
 
 ## Key Files Map
 - `index.html`: Holds the DOM views for the Lobby, Memory Match, Tic Tac Toe, Caro, Cờ Cá Ngựa, Chess, and Cờ Tướng.
@@ -33,13 +37,16 @@
 - `js/games/cangua.js`: Core Cờ Cá Ngựa game engine, turn coordinator, and heuristic AI.
 - `js/games/chess.js`: Core Chess game engine, move calculations, promotion modal, and Alpha-Beta minimax AI.
 - `js/games/tuong.js`: Core Cờ Tướng game engine, move calculations, and Alpha-Beta minimax AI.
+- `js/games/onet.js`: Core Onet Connect (Nối Hình) game controller, 2-turn pathfinder, shuffles, hints, and SVG rendering.
 - `test_tictactoe_logic.js`: Unit tests verifying victory checks and minimax block/win decisions.
 - `test_caro_logic.js`: Unit tests verifying Caro win check, Heuristic AI defense, and PvE undo stack.
 - `test_match_logic.js`: Unit tests verifying Memory Match pair verification and victory logic.
 - `test_cangua_logic.js`: Unit tests validating Ludo deployment, movement, kicking, stretch climbing, and win condition checks.
 - `test_chess_logic.js`: Unit tests validating Chess initial setup, pawn/knight legal moves, Fool's mate checkmate, and stalemate.
 - `test_tuong_logic.js`: Unit tests validating Cờ Tướng setup, blocking, cannon captures with screen, King facing rules, and checkmate/stalemate.
+- `test_onet_logic.js`: Unit tests validating Onet padded boundaries, isPathClear, straight/L/U path routing, click flow, and shuffles.
 - `tasks.md`: Task checklist registered with the Project Manager.
+
 
 ## Recent Schema Changes
 No database schema exists. LocalStorage schema keys are defined as follows:
@@ -56,6 +63,8 @@ No database schema exists. LocalStorage schema keys are defined as follows:
 - `cangua_wins` / `cangua_played` (Integer)
 - `chess_wins` / `chess_played` / `chess_game_mode` / `chess_ai_diff` (Integer/String)
 - `tuong_wins` / `tuong_played` / `tuong_game_mode` / `tuong_ai_diff` (Integer/String)
+- `onet_wins` / `onet_played` / `onet_level` (Integer)
+
 
 ## API Contracts
 Standard browser-based event-driven API and HTML5 LocalStorage interface.

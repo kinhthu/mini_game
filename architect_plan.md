@@ -1,74 +1,28 @@
-# Technical Plan: Positioning Chinese Chess Pieces on Line Intersections
+Tôi đã phân tích các yêu cầu cho trò chơi nối chọn cặp hình giống nhau (tương tự game Pikachu / Onet Connect / Pokemon Match) và xây dựng một kế hoạch kỹ thuật chi tiết.
 
-This document details the architectural and styling changes needed to place Chinese Chess (Xiangqi) pieces at the intersections of the board lines instead of the center of squares, fulfilling the user's request:
-> "sửa lỗi game cờ tướng. Các quân cờ đang đặt sai vị trí, nên đặt tại giao điểm của các đường kẻ chứ không phải chính giữa ô vuông"
+Kế hoạch kỹ thuật đã được tạo và ghi nhận tại tệp [architect_plan.md](file:///D:/workspace/Mini-Games/architect_plan.md) trong thư mục dự án của bạn.
 
----
+### Tóm tắt Kế hoạch Kỹ thuật
 
-## 1. Architectural Strategy
+1. **Cơ chế cốt lõi (Onet Connect / Pikachu Rules):**
+   * **Bảng trò chơi:** Lưới ô vuông chứa các emoji động vật (tương tự chủ đề Pokemon). Lưới được đệm thêm một viền trống ở ngoài cùng (các ô trống thuộc hàng `0`, `H+1`, cột `0`, `W+1`) nhằm cho phép đường nối đi vòng ra rìa ngoài bảng.
+   * **Thuật toán tìm đường nối (tối đa 2 góc vuông / 3 đoạn thẳng):** Sử dụng một vòng quét tối ưu hóa theo chiều dọc (trên trục cột $c$) và ngang (trên trục dòng $r$) để phát hiện liên kết thẳng (0 góc), liên kết chữ L (1 góc), hoặc liên kết chữ Z/U (2 góc).
+   * **Tự động xáo bài (Auto-Shuffle):** Thuật toán tự động duyệt tìm các cặp trùng khớp có thể nối được. Nếu không còn nước đi hợp lệ nào trên bảng, hệ thống sẽ xáo trộn (shuffle) các thẻ cờ còn lại để đảm bảo màn chơi không bị kẹt (soft-lock).
 
-In Chinese Chess, there are **9 vertical lines** (files) and **10 horizontal lines** (ranks), creating **90 intersection points**.
+2. **Giao diện & Trải nghiệm cao cấp (Premium UI/UX):**
+   * **Đường nối Neon rực rỡ:** Vẽ đường nối bằng thẻ `<svg>` tuyệt đẹp đè lên trên lưới, kết hợp bộ lọc bóng mờ (`drop-shadow`) và hiệu ứng chuyển động laser mượt mà trong 300ms rồi biến mất.
+   * **Hiệu ứng biến mất (Tile Fade Out):** Các thẻ cờ biến mất với hiệu ứng phóng nhẹ và thu nhỏ mờ dần khi khớp cặp.
+   * **Bảng điều khiển bổ sung:** Gồm có **Thanh thời gian đếm ngược (Timer Bar)**, số lượt **Gợi ý (Hint)**, và số lượt **Tự xáo bài (Manual Shuffle)**.
+   * **Cấp độ (Levels):** Tăng kích thước lưới từ dễ đến khó (từ lưới `4x6` đến `8x12`).
 
-### Cell-Centered Grid Alignment (Recommended)
-Instead of switching to a completely new grid positioning system in Javascript (which would require rewrites of coordinate indexing, move logic, AI pathfinding, and risk breaking all unit tests), we will use an elegant **CSS-based cell-centered alignment**:
-1. **Grid Layout**: Keep the existing 9x10 grid of cells (`.tuong-square`).
-2. **Pieces Positioning**: Pieces will remain centered inside these cells.
-3. **Line Intersections**: Instead of borders *around* each cell, we will draw grid lines *passing through the center* of each cell.
-   - The intersection of the horizontal and vertical center lines will lie exactly in the middle of each cell.
-   - Since pieces are centered in each cell, they will automatically align perfectly on the intersections!
-4. **River Realignment**: The river is between Row 4 and Row 5. In this cell-centered approach, the river space spans from the center line of Row 4 (`45%` of board height) to the center line of Row 5 (`55%` of board height). We will shift the absolute `.tuong-river` container to `top: 45%` and keep `height: 10%`.
-5. **Palace Diagonals**: We will draw the diagonal lines inside the palace cells using `::before` pseudo-elements. The diagonal lines will go from corner to center, or corner to corner, connecting perfectly to form the two traditional "X" palace boundaries.
+3. **Các tệp tin sẽ chỉnh sửa / tạo mới:**
+   * **Chỉnh sửa:**
+     * [index.html](file:///D:/workspace/Mini-Games/index.html) (Thêm thẻ game trong sảnh chính, giao diện trò chơi `#onet-view`, các nút điều khiển, SVG overlay và Win/Lose modal).
+     * [style.css](file:///D:/workspace/Mini-Games/style.css) (CSS Layout dạng glassmorphic, lưới ô cờ linh hoạt và hiệu ứng animation đường đi neon).
+     * [js/main.js](file:///D:/workspace/Mini-Games/js/main.js) (Ràng buộc nút chơi, tích hợp lưu trữ điểm số/cấp độ và cập nhật thống kê người chơi trên toàn hệ thống).
+   * **Tạo mới:**
+     * `js/games/onet.js` (Lớp xử lý chính trò chơi `OnetConnect`).
+     * `test_onet_logic.js` (Viết các ca kiểm thử tự động trên NodeJS cho thuật toán tìm đường nối và kiểm tra xáo bài).
 
-```
-       CELL-CENTERED GRID DRAWING PRINCIPLE:
-       
-       +---------+---------+---------+
-       |         |         |         |
-       |    |    |    |    |    |    |
-       |----+----|----+----|----+----|  <-- Intersections are at the center 
-       |  (Piece)|         |         |      of cells.
-       |    |    |    |    |    |    |
-       +---------+---------+---------+
-```
-
----
-
-## 2. Implementation Steps
-
-### Step 1: Update Palace Classes in `js/games/tuong.js`
-Modify `isPalaceDiagonal` to return separate class names for each quadrant position of the palace:
-- `palace-diagonal-tl` (top-left corners: cell (0, 3), (7, 3))
-- `palace-diagonal-br` (bottom-right corners: cell (2, 5), (9, 5))
-- `palace-diagonal-tr` (top-right corners: cell (0, 5), (7, 5))
-- `palace-diagonal-bl` (bottom-left corners: cell (2, 3), (9, 3))
-- `palace-diagonal-both` (centers: cell (1, 4), (8, 4))
-
-### Step 2: Refactor CSS in `style.css`
-1. **Remove Old Cell Borders**: Remove the old cell border style on `.tuong-square`.
-2. **Draw Center Grid Lines**: Add `background-image` using solid solid-color linear gradients of size `2px 100%` and `100% 2px`, positioned at `center center`.
-3. **Style Board Edges and Corners**: Use `:nth-child` selectors to adjust the sizes and positions of gradients for outer-most lines:
-   - **Left edge (Col 0)**: Horizontal line starts at center.
-   - **Right edge (Col 8)**: Horizontal line ends at center.
-   - **Top edge (Row 0)**: Vertical line starts at center.
-   - **Bottom edge (Row 9)**: Vertical line ends at center.
-   - **Corners**: Top-left, top-right, bottom-left, bottom-right combine these adjustments.
-4. **Style River Boundaries**:
-   - **Row 4**: Vertical lines stop at center (top-half only), except for Columns 0 and 8.
-   - **Row 5**: Vertical lines start at center (bottom-half only), except for Columns 0 and 8.
-5. **Add Palace Diagonals**: Implement the diagonals using `::before` pseudo-elements on the palace cells.
-6. **Update Selection Highlights**:
-   - Change `.selected-square`'s `background: ... !important` to `background-color: ... !important` so that the grid lines underneath remain visible.
-7. **Reposition River Overlay**:
-   - Update `.tuong-river` to `top: 45%` and `height: 10%`.
-
----
-
-## 3. Verification Plan
-
-1. **Visual Inspection**: Open the browser page and verify:
-   - Pieces are placed exactly at the intersections of the board lines.
-   - The border of the board is clean, and lines do not leak outside.
-   - The river is correctly drawn between ranks 4 and 5, with vertical lines stopping at the banks (except the borders).
-   - Palace diagonals are perfectly aligned and connect corner-to-corner across the 3x3 cells.
-   - Selection/highlight states overlay correctly without wiping out the grid lines.
-2. **Logic and Unit Tests**: Run `node test_tuong_logic.js` to ensure the logic has not been broken and all rules are intact.
+> [!IMPORTANT]
+> **Khuyên dùng:** Để tiến hành các bước phát triển tiếp theo thuận lợi, bạn hãy thiết lập đường dẫn **`D:\workspace\Mini-Games`** làm không gian làm việc hoạt động (Active Workspace) trên IDE của bạn.

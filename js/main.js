@@ -29,7 +29,8 @@ const ProfileManager = {
         const canguaWins = parseInt(localStorage.getItem('cangua_wins') || '0', 10);
         const chessWins = parseInt(localStorage.getItem('chess_wins') || '0', 10);
         const tuongWins = parseInt(localStorage.getItem('tuong_wins') || '0', 10);
-        const totalWins = memoryWins + tttWins + caroWins + canguaWins + chessWins + tuongWins;
+        const onetWins = parseInt(localStorage.getItem('onet_wins') || '0', 10);
+        const totalWins = memoryWins + tttWins + caroWins + canguaWins + chessWins + tuongWins + onetWins;
         if (rankEl) rankEl.textContent = this.getRank(totalWins);
 
         // Update Lobby stats
@@ -41,8 +42,9 @@ const ProfileManager = {
         const canguaPlayed = parseInt(localStorage.getItem('cangua_played') || '0', 10);
         const chessPlayed = parseInt(localStorage.getItem('chess_played') || '0', 10);
         const tuongPlayed = parseInt(localStorage.getItem('tuong_played') || '0', 10);
+        const onetPlayed = parseInt(localStorage.getItem('onet_played') || '0', 10);
         
-        const totalPlayed = memoryPlayed + tttPlayed + caroPlayed + canguaPlayed + chessPlayed + tuongPlayed;
+        const totalPlayed = memoryPlayed + tttPlayed + caroPlayed + canguaPlayed + chessPlayed + tuongPlayed + onetPlayed;
         const globalPlayedEl = document.getElementById('global-played');
         if (globalPlayedEl) globalPlayedEl.textContent = totalPlayed;
 
@@ -95,6 +97,12 @@ const ProfileManager = {
         if (tuongWinsEl) tuongWinsEl.textContent = tuongWins;
         const tuongPlayedEl = document.getElementById('stats-tuong-played');
         if (tuongPlayedEl) tuongPlayedEl.textContent = tuongPlayed;
+
+        // Update Onet Connect specific stats on Lobby
+        const onetWinsEl = document.getElementById('stats-onet-wins');
+        if (onetWinsEl) onetWinsEl.textContent = onetWins;
+        const onetLevelEl = document.getElementById('stats-onet-level');
+        if (onetLevelEl) onetLevelEl.textContent = localStorage.getItem('onet_level') || '1';
     }
 };
 
@@ -179,6 +187,16 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    const playOnetBtn = document.getElementById('play-onet-btn');
+    if (playOnetBtn) {
+        playOnetBtn.addEventListener('click', () => {
+            GameHub.showView('onet-view');
+            if (window.OnetConnect) {
+                window.OnetConnect.init();
+            }
+        });
+    }
+
     document.querySelectorAll('.back-to-lobby-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             // Stop timers/games if applicable
@@ -228,6 +246,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             } catch (e) {
                 console.error("Error resetting TuongGame:", e);
+            }
+
+            try {
+                if (window.OnetConnect && typeof window.OnetConnect.reset === 'function') {
+                    window.OnetConnect.reset();
+                }
+            } catch (e) {
+                console.error("Error resetting OnetConnect:", e);
             }
 
             GameHub.showView('lobby-view');

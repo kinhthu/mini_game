@@ -111,6 +111,18 @@
                 </div>
                 <button id="play-tuong-btn" class="btn primary-btn red-btn">Play Now</button>
             </div>
+
+            <!-- Onet Connect Card -->
+            <div class="game-card glass-card onet-theme">
+                <div class="game-icon">🥑</div>
+                <h3 class="game-title">Onet Connect</h3>
+                <p class="game-desc">Kết nối các cặp hình giống nhau bằng đường đi không quá 2 khúc cua để dọn sạch bảng chơi.</p>
+                <div class="game-stats">
+                    <span>Wins: <strong id="stats-onet-wins">0</strong></span>
+                    <span>Highest Level: <strong id="stats-onet-level">1</strong></span>
+                </div>
+                <button id="play-onet-btn" class="btn primary-btn cyan-btn">Play Now</button>
+            </div>
         </main>
     </div>
 
@@ -512,6 +524,76 @@
         </div>
     </div>
 
+    <!-- Onet Connect View -->
+    <div id="onet-view" class="view-container hidden">
+        <div class="game-container onet-container">
+            <header class="onet-header">
+                <div class="header-nav">
+                    <button class="back-to-lobby-btn btn">← Back to Lobby</button>
+                </div>
+                <h1 class="onet-title">Onet Connect <span style="font-size: 1.5rem; color: var(--accent-cyan);">(Level <span id="onet-current-level">1</span>)</span></h1>
+                
+                <!-- Timer Bar -->
+                <div class="onet-timer-container glass-card">
+                    <div id="onet-timer-bar" class="onet-timer-bar"></div>
+                </div>
+
+                <!-- Stats: Score, Hints, Shuffles -->
+                <div class="stats onet-stats">
+                    <div class="stat-box">
+                        <span class="label">Score</span>
+                        <span class="value" id="onet-score">0</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="label">Hints</span>
+                        <span class="value" id="onet-hints">3</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="label">Shuffles</span>
+                        <span class="value" id="onet-shuffles">3</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Board Container holding both the Grid and SVG Overlay -->
+            <main id="onet-board-container" class="onet-board-container">
+                <div id="onet-grid" class="onet-grid">
+                    <!-- Tiles will be generated dynamically by JS -->
+                </div>
+                <svg id="onet-svg-overlay" class="onet-svg-overlay" xmlns="http://www.w3.org/2000/svg"></svg>
+            </main>
+
+            <!-- Controls -->
+            <footer class="onet-controls">
+                <button id="onet-hint-btn" class="btn">💡 Hint</button>
+                <button id="onet-shuffle-btn" class="btn">🔄 Shuffle</button>
+                <button id="onet-restart-btn" class="btn primary-btn cyan-btn">🔄 Restart Match</button>
+            </footer>
+        </div>
+
+        <!-- Level Clear Modal -->
+        <div class="modal-overlay" id="onet-win-modal">
+            <div class="modal-content">
+                <h2>Level Cleared! 🎉</h2>
+                <p>Bạn đã hoàn thành cấp độ với số điểm: <strong id="onet-final-score">0</strong>.</p>
+                <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 1.5rem;">
+                    <button id="onet-next-level-btn" class="btn primary-btn cyan-btn">Next Level</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Over Modal -->
+        <div class="modal-overlay" id="onet-lose-modal">
+            <div class="modal-content">
+                <h2>Game Over! 😢</h2>
+                <p>Hết thời gian hoặc không còn nước đi hợp lệ. Điểm số: <strong id="onet-gameover-score">0</strong>.</p>
+                <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 1.5rem;">
+                    <button id="onet-retry-btn" class="btn primary-btn cyan-btn">Try Again</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Central navigation script -->
     <script src="js/main.js"></script>
     <!-- Game specific scripts -->
@@ -521,5 +603,6 @@
     <script src="js/games/cangua.js"></script>
     <script src="js/games/chess.js"></script>
     <script src="js/games/tuong.js"></script>
+    <script src="js/games/onet.js"></script>
 </body>
 </html>
