@@ -1,7 +1,7 @@
 # Memory: Mini Game Hub Integration
 
 ## Last Updated
-2026-07-12
+2026-07-17
 
 ## Tech Stack
 - HTML5 (Structure)
@@ -17,6 +17,7 @@
 - **Cờ Cá Ngựa Heuristic AI & Multi-Dice Logic**: Implemented Cờ Cá Ngựa (Ludo) game with a 5-tier heuristic decision making AI (Kick -> Deploy -> Climb -> Advance furthest horse -> Random) and double dice rolling mechanics with deployment triggers (Double or 1-6) and capped consecutive rolls (max 3).
 - **Chess Minimax with Alpha-Beta Pruning**: Integrated Chess (Cờ Vua) with an 8x8 grid, full move rules (castling, en passant, promotion modal), and a depth-2 Minimax AI equipped with Alpha-Beta Pruning and positional evaluation tables for strategic play.
 - **Chinese Chess Minimax with Alpha-Beta Pruning**: Integrated Cờ Tướng (Xiangqi) with a 9x10 grid, full move rules (advisor palace bounds, elephant river limits, elephant eye blocking, knight foot blocking, cannon capture screens, and King facing checks), and a depth-2 Minimax AI equipped with Alpha-Beta Pruning and positional evaluation heuristics (e.g. piece values, center columns bonuses, and knight mobility).
+- **Chinese Chess Line Intersection Alignment**: Switched the Chinese Chess board layout from cell-centered (with borders between cells) to a traditional line-intersection layout by using CSS center gradients on `.tuong-square` cells and `:nth-child` outer coordinate selectors. This aligns pieces exactly on intersections without modifying JavaScript coordinate matrix mappings.
 - **Artificial Delay**: Implemented delay timers for Caro AI (300ms), Tic Tac Toe AI (500ms), Ludo AI (800ms), Chess AI (700ms/400ms), and Cờ Tướng AI (600ms/800ms) with status label feedback to ensure a natural gameplay flow.
 - **Multi-step Undo**: Designed undo stacks supporting 1-step undo in PvP and 2-step undo in PvE to cleanly revert both AI and player moves.
 - **Reconstructed Directory Layout**: Refactored scripts into clean subdirectories (`js/` and `js/games/`) to logically separate navigation logic and game engines.
@@ -70,3 +71,4 @@ Standard browser-based event-driven API and HTML5 LocalStorage interface.
 - **Powershell Double Quotes**: Passing inline JSON arguments to Python MCP calling scripts via Powershell can strip quotes and cause JSONDecodeError; write JSON parameters to local temporary files instead.
 - **Chinese Chess King Facing (Lộ mặt tướng)**: Two Kings facing directly on the same column with no pieces in between is illegal. This must be evaluated on the simulated next board during move validation to filter out illegal moves that expose the Kings.
 - **Chinese Chess Elephant & Knight Blocking**: Elephants are blocked by occupying their diagonal intersection "eye" (`(from + to) / 2`), and Knights are blocked by occupying their adjacent orthogonal "foot". Correct 9x10 grid coordinate mapping is crucial to avoid offset errors.
+- **Grid Intersection CSS Selector Sizing**: Aligning grid borders onto cell intersections on a grid can be solved cleanly using CSS gradients and :nth-child border overrides. This preserves standard 0-indexed column-row mapping in JS logic while achieving the traditional visual grid intersection layout.

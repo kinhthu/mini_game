@@ -140,14 +140,18 @@
         isPalaceDiagonal(row, col) {
             // Black Palace: rows 0-2, cols 3-5
             if (row >= 0 && row <= 2 && col >= 3 && col <= 5) {
-                if ((row === 0 && col === 3) || (row === 2 && col === 5)) return 'palace-diagonal-1';
-                if ((row === 0 && col === 5) || (row === 2 && col === 3)) return 'palace-diagonal-2';
+                if (row === 0 && col === 3) return 'palace-diagonal-tl';
+                if (row === 2 && col === 5) return 'palace-diagonal-br';
+                if (row === 0 && col === 5) return 'palace-diagonal-tr';
+                if (row === 2 && col === 3) return 'palace-diagonal-bl';
                 if (row === 1 && col === 4) return 'palace-diagonal-both';
             }
             // Red Palace: rows 7-9, cols 3-5
             if (row >= 7 && row <= 9 && col >= 3 && col <= 5) {
-                if ((row === 7 && col === 3) || (row === 9 && col === 5)) return 'palace-diagonal-1';
-                if ((row === 7 && col === 5) || (row === 9 && col === 3)) return 'palace-diagonal-2';
+                if (row === 7 && col === 3) return 'palace-diagonal-tl';
+                if (row === 9 && col === 5) return 'palace-diagonal-br';
+                if (row === 7 && col === 5) return 'palace-diagonal-tr';
+                if (row === 9 && col === 3) return 'palace-diagonal-bl';
                 if (row === 8 && col === 4) return 'palace-diagonal-both';
             }
             return '';
